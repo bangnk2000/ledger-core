@@ -1,0 +1,271 @@
+openapi: 3.1.0
+info:
+  title: Ledger Core Foundation API
+  version: 0.1.0
+  description: Additive API contract for immutable double-entry ledger posting and balance retrieval.
+paths:
+  /api/v1/ledger/postings:
+    post:
+      summary: Submit an idempotent double-entry ledger posting request.
+      operationId: postLedgerTransaction
+      tags:
+        - Ledger
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+          description: Stable request identifier for retries.
+        - name: X-Requester-Scope
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+          description: Caller or source system scope for idempotency uniqueness.
+        - name: X-Correlation-Id
+          in: header
+          required: false
+          schema:
+            type: string
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostLedgerTransactionRequest'
+      responses:
+        '201':
+          description: Posting accepted and recorded atomically.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostingOutcome'
+        '200':
+          description: Duplicate request with the same request content; original stable outcome returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostingOutcome'
+        '400':
+          description: Request rejected for validation or domain rule violation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostingOutcome'
+        '409':
+          description: Request identifier reused with conflicting content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostingOutcome'
+        '500':
+          description: Posting failed without a visible posted transaction.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostingOutcome'
+  /api/v1/ledger/accounts/{accountId}/balance:
+    get:
+      summary: Calculate an account balance from posted ledger entries.
+      operationId: getAccountBalance
+      tags:
+        - Ledger
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: currency
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 3
+      responses:
+        '200':
+          description: Balance calculated from committed posted entries.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountBalance'
+        '400':
+          description: Invalid balance request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorOutcome'
+components:
+  schemas:
+    PostLedgerTransactionRequest:
+      type: object
+      required:
+        - entries
+        - actor
+      properties:
+        businessReference:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 512
+        metadata:
+          type: object
+          additionalProperties: true
+        causationId:
+          type: string
+          maxLength: 128
+        submittedAt:
+          type: string
+          format: date-time
+        actor:
+          $ref: '#/components/schemas/Actor'
+        entries:
+          type: array
+          minItems: 2
+          items:
+            $ref: '#/components/schemas/PostingEntry'
+    PostingEntry:
+      type: object
+      required:
+        - lineId
+        - accountId
+        - direction
+        - amount
+        - currency
+      properties:
+        lineId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        accountId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        direction:
+          type: string
+          enum:
+            - DEBIT
+            - CREDIT
+        amount:
+          type: string
+          pattern: '^[0-9]+(\\.[0-9]{1,4})?$'
+          description: Positive decimal amount encoded as a string to avoid floating-point loss.
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        metadata:
+          type: object
+          additionalProperties: true
+    Actor:
+      type: object
+      required:
+        - actorId
+        - actorType
+      properties:
+        actorId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        actorType:
+          type: string
+          enum:
+            - USER
+            - SYSTEM
+            - SERVICE
+    PostingOutcome:
+      type: object
+      required:
+        - outcome
+        - code
+        - requestId
+        - requesterScope
+        - trace
+      properties:
+        outcome:
+          type: string
+          enum:
+            - ACCEPTED
+            - REJECTED
+            - DUPLICATE
+            - CONFLICT
+            - FAILED
+        code:
+          type: string
+          examples:
+            - LEDGER_POSTED
+            - LEDGER_UNBALANCED
+            - LEDGER_DUPLICATE_ACCEPTED
+            - LEDGER_IDEMPOTENCY_CONFLICT
+        requestId:
+          type: string
+        requesterScope:
+          type: string
+        transactionId:
+          type: string
+        postedAt:
+          type: string
+          format: date-time
+        message:
+          type: string
+        trace:
+          $ref: '#/components/schemas/Trace'
+    AccountBalance:
+      type: object
+      required:
+        - accountId
+        - balance
+        - currency
+        - calculatedAt
+        - entryCount
+      properties:
+        accountId:
+          type: string
+        balance:
+          type: string
+          description: Decimal amount encoded as a string.
+        currency:
+          type: string
+        calculatedAt:
+          type: string
+          format: date-time
+        entryCount:
+          type: integer
+          minimum: 0
+    Trace:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        causationId:
+          type: string
+        actorId:
+          type: string
+        actorType:
+          type: string
+    ErrorOutcome:
+      type: object
+      required:
+        - outcome
+        - code
+        - message
+      properties:
+        outcome:
+          type: string
+          enum:
+            - REJECTED
+            - FAILED
+        code:
+          type: string
+        message:
+          type: string
