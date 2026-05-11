@@ -1,0 +1,8 @@
+- detect architecture violations
+- detect layering violations
+- detect anemic domain model
+- detect transaction leaks
+- detect N+1 queries
+- detect locking issues
+- detect unsafe migrations
+- detect observability gaps
