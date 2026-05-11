@@ -34,6 +34,9 @@
 - **Simplicity and explicitness**: Is the simplest viable design chosen, with
   any new abstraction, dependency, async flow, CQRS split, or distributed
   transaction explicitly justified?
+- **Financial ledger correctness**: Are ledger entries immutable, balance
+  mutations double-entry balanced, and all ledger effects traceable and
+  auditable?
 - **Hexagonal architecture**: Are domain and application layers isolated from
   Spring, PostgreSQL, HTTP, messaging, and external SDK concerns?
 - **Pragmatic DDD**: Are business invariants, aggregate boundaries, and
@@ -50,6 +53,8 @@
 - **Reliability and integrations**: Are retry, timeout, idempotency, failure
   handling, and consistency guarantees documented for external integrations,
   async flows, and distributed transactions?
+- **Transaction safety**: Are transaction boundaries explicit, and are
+  concurrency, locking, scaling bottlenecks, and rollback strategy identified?
 - **Operations**: Does the design preserve Terraform/Docker reproducibility,
   Kubernetes rolling updates, and graceful shutdown?
 - **ADRs and dependencies**: Are major architectural decisions, architecture

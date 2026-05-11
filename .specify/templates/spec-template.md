@@ -104,6 +104,8 @@
 - **EQR-005**: Security-sensitive behavior MUST define authentication, authorization, secrets handling, and input validation requirements.
 - **EQR-006**: Observability requirements MUST identify structured logs, metrics, and traces needed for operation.
 - **EQR-007**: Performance and scalability expectations MUST be measurable or marked NEEDS CLARIFICATION.
+- **EQR-008**: Ledger mutations MUST define double-entry validation, immutable-entry behavior, traceability, audit logging, and reconciliation expectations.
+- **EQR-009**: Mutating external requests MUST define idempotency keys, duplicate handling, and stable retry outcomes.
 
 ### Key Entities *(include if feature involves data)*
 

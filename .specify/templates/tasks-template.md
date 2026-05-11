@@ -99,8 +99,9 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T016 [US1] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
 - [ ] T017 [US1] Implement inbound adapter in src/main/java/[package]/adapter/in/[Adapter].java
 - [ ] T018 [US1] Implement outbound adapter in src/main/java/[package]/adapter/out/[Adapter].java
-- [ ] T019 [US1] Add validation, error handling, and security checks
-- [ ] T020 [US1] Add structured logging, metrics, and traces for user story 1 operations
+- [ ] T019 [US1] Add double-entry validation, immutable ledger-entry behavior, and audit traceability
+- [ ] T020 [US1] Add idempotency handling, validation, error handling, and security checks
+- [ ] T021 [US1] Add structured logging, metrics, and traces for user story 1 operations
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -114,16 +115,16 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T021 [P] [US2] Contract test for [endpoint/API behavior] in src/test/java/[package]/contract/[Name]ContractTest.java
-- [ ] T022 [P] [US2] Integration test for [critical business flow] in src/test/java/[package]/integration/[Name]IntegrationTest.java
+- [ ] T022 [P] [US2] Contract test for [endpoint/API behavior] in src/test/java/[package]/contract/[Name]ContractTest.java
+- [ ] T023 [P] [US2] Integration test for [critical business flow] in src/test/java/[package]/integration/[Name]IntegrationTest.java
 
 ### Implementation for User Story 2
 
-- [ ] T023 [P] [US2] Create [Entity] domain model in src/main/java/[package]/domain/[Entity].java
-- [ ] T024 [US2] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
-- [ ] T025 [US2] Implement adapters in src/main/java/[package]/adapter/[in|out]/[Adapter].java
-- [ ] T026 [US2] Add observability, validation, and security checks
-- [ ] T027 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T024 [P] [US2] Create [Entity] domain model in src/main/java/[package]/domain/[Entity].java
+- [ ] T025 [US2] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
+- [ ] T026 [US2] Implement adapters in src/main/java/[package]/adapter/[in|out]/[Adapter].java
+- [ ] T027 [US2] Add observability, validation, and security checks
+- [ ] T028 [US2] Integrate with User Story 1 components (if needed)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -137,15 +138,15 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T028 [P] [US3] Contract test for [endpoint/API behavior] in src/test/java/[package]/contract/[Name]ContractTest.java
-- [ ] T029 [P] [US3] Integration test for [critical business flow] in src/test/java/[package]/integration/[Name]IntegrationTest.java
+- [ ] T029 [P] [US3] Contract test for [endpoint/API behavior] in src/test/java/[package]/contract/[Name]ContractTest.java
+- [ ] T030 [P] [US3] Integration test for [critical business flow] in src/test/java/[package]/integration/[Name]IntegrationTest.java
 
 ### Implementation for User Story 3
 
-- [ ] T030 [P] [US3] Create [Entity] domain model in src/main/java/[package]/domain/[Entity].java
-- [ ] T031 [US3] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
-- [ ] T032 [US3] Implement adapters in src/main/java/[package]/adapter/[in|out]/[Adapter].java
-- [ ] T033 [US3] Add observability, validation, and security checks
+- [ ] T031 [P] [US3] Create [Entity] domain model in src/main/java/[package]/domain/[Entity].java
+- [ ] T032 [US3] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
+- [ ] T033 [US3] Implement adapters in src/main/java/[package]/adapter/[in|out]/[Adapter].java
+- [ ] T034 [US3] Add observability, validation, and security checks
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -165,7 +166,11 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Additional unit tests in src/test/java/[package]/unit/
 - [ ] TXXX Security hardening
 - [ ] TXXX Verify PostgreSQL migrations are zero-downtime and include rollback or roll-forward strategy
+- [ ] TXXX Verify ledger entries are immutable, double-entry accounting is preserved, and balance mutations are traceable
+- [ ] TXXX Verify transaction boundaries are explicit and concurrency, locking, scaling, and rollback risks are documented
 - [ ] TXXX Verify external integration retry, timeout, idempotency, and failure handling documentation
+- [ ] TXXX Verify API idempotency, backward compatibility, and error contract analysis
+- [ ] TXXX Verify event delivery guarantees, retry, deduplication, and ordering requirements
 - [ ] TXXX Update or create ADRs for major architectural decisions, architecture violations, or new dependencies
 - [ ] TXXX Run quickstart.md validation
 
