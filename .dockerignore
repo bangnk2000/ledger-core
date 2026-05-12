@@ -1,0 +1,11 @@
+.git
+.gradle
+build
+node_modules
+coverage
+Dockerfile*
+.dockerignore
+*.log
+.env*
+.idea
+.vscode

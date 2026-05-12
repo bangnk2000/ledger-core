@@ -1,10 +1,9 @@
 package com.bangnk.ledgercore.ledger_core;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import com.bangnk.ledgercore.ledger_core.ledger.adapter.PostgresIntegrationTestBase;
 
-@SpringBootTest
-class LedgerCoreApplicationTests {
+class LedgerCoreApplicationTests extends PostgresIntegrationTestBase {
 
 	@Test
 	void contextLoads() {
