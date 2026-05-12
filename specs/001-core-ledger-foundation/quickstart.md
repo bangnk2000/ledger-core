@@ -3,8 +3,9 @@
 ## Prerequisites
 
 - Java 21 available through the Gradle toolchain.
-- Docker available for PostgreSQL integration testing once Testcontainers is added.
-- Repository root: `/home/bangnk/projects/ledger-core`.
+- Docker available for PostgreSQL integration testing because the ledger
+  integration and contract tests use Testcontainers PostgreSQL.
+- Repository root: `/home/bangnk/personal/ledger-core`.
 
 ## Inspect the Feature Plan
 
@@ -27,17 +28,43 @@ sed -n '1,220p' specs/001-core-ledger-foundation/contracts/ledger-api.openapi.ya
 ## Run Verification
 
 ```bash
-./gradlew test
+GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test
 ```
 
-After PostgreSQL integration tests are added, run the same command with Docker available so Testcontainers can start PostgreSQL.
+If the local sandbox blocks wildcard IP detection for Testcontainers, rerun the
+same command outside the sandbox with the same `GRADLE_USER_HOME` override.
+The full suite passed on 2026-05-12 when executed outside the sandbox in an
+environment where Testcontainers networking was available.
+
+## Focused Smoke Verification
+
+```bash
+GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.in.web.PostLedgerTransactionContractTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.in.web.PostLedgerTransactionIdempotencyContractTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.in.web.PostLedgerTransactionTraceContractTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.in.web.GetAccountBalanceContractTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.domain.LedgerTransactionTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.domain.LedgerEntryImmutabilityTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.application.IdempotencyServiceTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.application.GetAccountBalanceServiceTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.application.AuditEventPublisherTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.PostLedgerTransactionIntegrationTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.LedgerEntryImmutabilityIntegrationTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.LedgerCorrectionIntegrationTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.LedgerPostingConcurrencyIntegrationTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.GetAccountBalanceIntegrationTest \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.LedgerTraceRetentionIntegrationTest
+```
+
+The focused smoke command also passed on 2026-05-12.
 
 ## Manual API Smoke Examples
 
 Start the application:
 
 ```bash
-./gradlew bootRun
+GRADLE_USER_HOME=/tmp/gradle-home ./gradlew bootRun
 ```
 
 Submit a balanced posting:
@@ -51,6 +78,11 @@ curl -i -X POST http://localhost:8080/api/v1/ledger/postings \
   -d '{
     "businessReference": "invoice-1001",
     "description": "Record invoice settlement",
+    "metadata": {
+      "source": "quickstart"
+    },
+    "causationId": "cause-001",
+    "submittedAt": "2026-05-12T09:00:00Z",
     "actor": {
       "actorId": "system-ledger-test",
       "actorType": "SYSTEM"
@@ -77,12 +109,44 @@ curl -i -X POST http://localhost:8080/api/v1/ledger/postings \
 Retry the same request and expect the same stable outcome without duplicate entries:
 
 ```bash
+cat > /tmp/balanced-posting.json <<'JSON'
+{
+  "businessReference": "invoice-1001",
+  "description": "Record invoice settlement",
+  "metadata": {
+    "source": "quickstart"
+  },
+  "causationId": "cause-001",
+  "submittedAt": "2026-05-12T09:00:00Z",
+  "actor": {
+    "actorId": "system-ledger-test",
+    "actorType": "SYSTEM"
+  },
+  "entries": [
+    {
+      "lineId": "debit-cash",
+      "accountId": "cash",
+      "direction": "DEBIT",
+      "amount": "100.00",
+      "currency": "USD"
+    },
+    {
+      "lineId": "credit-revenue",
+      "accountId": "revenue",
+      "direction": "CREDIT",
+      "amount": "100.00",
+      "currency": "USD"
+    }
+  ]
+}
+JSON
+
 curl -i -X POST http://localhost:8080/api/v1/ledger/postings \
   -H 'Content-Type: application/json' \
   -H 'Idempotency-Key: request-001' \
   -H 'X-Requester-Scope: internal-test' \
   -H 'X-Correlation-Id: corr-001' \
-  -d @balanced-posting.json
+  -d @/tmp/balanced-posting.json
 ```
 
 Request a balance:
@@ -97,3 +161,10 @@ curl -i http://localhost:8080/api/v1/ledger/accounts/cash/balance?currency=USD
 - Do not drop or mutate existing structures during the foundation rollout.
 - Rolling deployments must tolerate the schema existing before the application starts using it.
 - Rejected and failed requests must not expose internal SQL, stack traces, secrets, or sensitive financial data.
+- Preferred rollback strategy is application rollback plus schema retention; do
+  not destructively remove ledger tables after they may contain history.
+
+## Remaining Verification Gaps
+
+- Manual `curl` smoke flows are documented here but were not executed in this
+  automation turn because the application was not started interactively.
