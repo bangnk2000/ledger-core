@@ -17,11 +17,11 @@
 
 **Purpose**: Establish package boundaries, migration entrypoint, and test support for the balance bounded context.
 
-- [ ] T001 Create balance bounded-context package structure under src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/
-- [ ] T002 Create balance test package structure under src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/
-- [ ] T003 [P] Add additive balance schema migration skeleton in src/main/resources/db/migration/V2__create_balance_management.sql
-- [ ] T004 [P] Add PostgreSQL Testcontainers base fixture in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/PostgresIntegrationTestSupport.java
-- [ ] T005 [P] Add balance API contract fixture helpers in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceApiContractSupport.java
+- [X] T001 Create balance bounded-context package structure under src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/
+- [X] T002 Create balance test package structure under src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/
+- [X] T003 [P] Add additive balance schema migration skeleton in src/main/resources/db/migration/V2__create_balance_management.sql
+- [X] T004 [P] Add PostgreSQL Testcontainers base fixture in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/PostgresIntegrationTestSupport.java
+- [X] T005 [P] Add balance API contract fixture helpers in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceApiContractSupport.java
 
 ---
 

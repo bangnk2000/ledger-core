@@ -1,0 +1,6 @@
+-- Account balance management schema entrypoint.
+--
+-- This migration is intentionally additive and currently establishes the
+-- versioned Flyway slot for the balance bounded context. Phase 2 expands this
+-- file with balance-owned tables for state, reservations, snapshots, rebuild
+-- checkpoints, reconciliation records, and idempotency outcomes.
