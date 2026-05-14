@@ -1,24 +1,20 @@
 <!--
 Sync Impact Report
-Version change: 1.0.0 -> 1.1.0
+Version change: 1.1.0 -> 1.1.1
 Modified principles:
-- Simplicity and Explicitness -> Simplicity and Explicitness
-- Hexagonal Architecture and Clean Dependency Direction -> Hexagonal Architecture and Clean Dependency Direction
-- Pragmatic Domain-Driven Design -> Pragmatic Domain-Driven Design
-- API and Data Compatibility -> API and Data Compatibility
-- Quality, Observability, and Security -> Quality, Observability, and Security
-- Reliability, Scalability, and Operations -> Reliability, Scalability, and Operations
+- Governance -> Governance
 Added sections:
-- Financial Ledger Correctness
+- None
 Removed sections:
 - None
 Templates requiring updates:
-- ✅ .specify/templates/plan-template.md
-- ✅ .specify/templates/spec-template.md
-- ✅ .specify/templates/tasks-template.md
+- ✅ .specify/templates/plan-template.md reviewed; no changes required
+- ✅ .specify/templates/spec-template.md updated
+- ✅ .specify/templates/tasks-template.md updated
 - ✅ .specify/templates/commands/*.md not present in this repository
 - ✅ README.md reviewed; empty file, no principle references required updates
-- ✅ docs/ai/*.md updated with extracted engineering rules
+- ✅ AGENTS.md updated to reference the active constitution and ADR path
+- ✅ docs/ai/*.md reviewed; no changes required
 Follow-up TODOs:
 - None
 -->
@@ -160,7 +156,8 @@ experience, data correctness, and incident response.
 
 This constitution supersedes conflicting local conventions, feature plans, and
 implementation shortcuts. Amendments require an ADR or equivalent documented
-proposal that explains the change, migration impact, and affected templates.
+proposal that explains the change, migration impact, affected templates, and
+affected runtime guidance.
 
 Versioning follows semantic versioning:
 - MAJOR for incompatible governance changes or removal/redefinition of core
@@ -170,10 +167,13 @@ Versioning follows semantic versioning:
 - PATCH for clarifications, wording changes, and non-semantic corrections.
 
 Compliance review is mandatory during planning, design review, pull request
-review, and release readiness. Any architecture violation requires ADR
+review, release readiness, and constitution amendments that change delivery
+rules or engineering constraints. Any architecture violation requires ADR
 documentation. Any new dependency requires justification. Any schema change
 requires a rollback or roll-forward strategy. Any distributed transaction
 requires documented consistency guarantees. Any external integration requires a
-retry, timeout, idempotency, and failure handling strategy.
+retry, timeout, idempotency, and failure handling strategy. Any constitution
+amendment that changes contributor expectations MUST update the affected
+templates and runtime guidance in the same change.
 
-**Version**: 1.1.0 | **Ratified**: 2026-05-11 | **Last Amended**: 2026-05-11
+**Version**: 1.1.1 | **Ratified**: 2026-05-11 | **Last Amended**: 2026-05-14

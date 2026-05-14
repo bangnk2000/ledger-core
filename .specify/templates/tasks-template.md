@@ -9,7 +9,7 @@ description: "Task list template for feature implementation"
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
 **Tests**: Integration tests are REQUIRED for every critical business flow.
-Contract, unit, and additional integration tests should be included when needed
+Contract, unit, and additional integration tests MUST be included when needed
 to validate compatibility, domain rules, adapters, or regressions identified in
 the feature specification and implementation plan.
 
@@ -101,6 +101,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T018 [US1] Implement outbound adapter in src/main/java/[package]/adapter/out/[Adapter].java
 - [ ] T019 [US1] Add double-entry validation, immutable ledger-entry behavior, and audit traceability
 - [ ] T020 [US1] Add idempotency handling, validation, error handling, and security checks
+- [ ] T020A [US1] Document explicit transaction boundaries, rollback behavior, and concurrency assumptions for the user story
 - [ ] T021 [US1] Add structured logging, metrics, and traces for user story 1 operations
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
