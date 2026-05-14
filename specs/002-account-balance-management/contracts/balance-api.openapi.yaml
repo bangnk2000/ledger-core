@@ -1,0 +1,483 @@
+openapi: 3.1.0
+info:
+  title: Account Balance Management API
+  version: 0.1.0
+  description: >
+    Additive contract for current balance queries, reservation commands,
+    reservation lifecycle control, rebuild operations, and reconciliation
+    triggers inside ledger-core.
+paths:
+  /api/v1/balances/accounts/{accountId}/current:
+    get:
+      summary: Get the current derived balance view for one account.
+      operationId: getCurrentBalance
+      tags:
+        - Balance
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: currency
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 3
+        - name: consistency
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [STRONG, DERIVED]
+      responses:
+        '200':
+          description: Current balance view returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentBalanceView'
+        '400':
+          description: Invalid balance request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorOutcome'
+  /api/v1/balances/reservations:
+    post:
+      summary: Create a protected funds reservation.
+      operationId: reserveFunds
+      tags:
+        - Reservation
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: X-Requester-Scope
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+        - name: X-Correlation-Id
+          in: header
+          required: false
+          schema:
+            type: string
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReservationRequest'
+      responses:
+        '201':
+          description: Reservation created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationOutcome'
+        '200':
+          description: Duplicate request with same content; original outcome returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationOutcome'
+        '400':
+          description: Validation or domain rule failure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationOutcome'
+        '409':
+          description: Idempotency conflict or write conflict.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationOutcome'
+        '423':
+          description: Protected write cannot proceed due to lock contention or degraded state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationOutcome'
+  /api/v1/balances/reservations/{reservationId}/confirm:
+    post:
+      summary: Confirm a reservation into a finalized ledger effect.
+      operationId: confirmReservation
+      tags:
+        - Reservation
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequesterScope'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmReservationRequest'
+      responses:
+        '200':
+          description: Reservation confirmation outcome.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationOutcome'
+        '409':
+          description: Reservation cannot transition or duplicate conflicting request detected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationOutcome'
+  /api/v1/balances/reservations/{reservationId}/release:
+    post:
+      summary: Release or cancel a reservation.
+      operationId: releaseReservation
+      tags:
+        - Reservation
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/RequesterScope'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseReservationRequest'
+      responses:
+        '200':
+          description: Reservation release outcome.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationOutcome'
+        '409':
+          description: Reservation cannot transition or duplicate conflicting request detected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationOutcome'
+  /api/v1/balances/rebuild-jobs:
+    post:
+      summary: Start a balance rebuild job from replay-safe history.
+      operationId: startBalanceRebuild
+      tags:
+        - Rebuild
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartRebuildRequest'
+      responses:
+        '202':
+          description: Rebuild accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RebuildJob'
+  /api/v1/balances/rebuild-jobs/{jobId}:
+    get:
+      summary: Get rebuild job status.
+      operationId: getBalanceRebuildJob
+      tags:
+        - Rebuild
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Rebuild job state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RebuildJob'
+  /api/v1/balances/reconciliations:
+    post:
+      summary: Start a reconciliation run for accounts or ranges.
+      operationId: startBalanceReconciliation
+      tags:
+        - Reconciliation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartReconciliationRequest'
+      responses:
+        '202':
+          description: Reconciliation accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationRunAccepted'
+components:
+  parameters:
+    ReservationId:
+      name: reservationId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+    JobId:
+      name: jobId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+    RequesterScope:
+      name: X-Requester-Scope
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+  schemas:
+    CreateReservationRequest:
+      type: object
+      required:
+        - accountId
+        - currency
+        - amount
+        - direction
+        - actor
+      properties:
+        accountId:
+          type: string
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        amount:
+          type: string
+          pattern: '^[0-9]+(\\.[0-9]{1,4})?$'
+        direction:
+          type: string
+          enum: [DEBIT, CREDIT]
+        expiresAt:
+          type: string
+          format: date-time
+        businessReference:
+          type: string
+          maxLength: 128
+        actor:
+          $ref: '#/components/schemas/Actor'
+    ConfirmReservationRequest:
+      type: object
+      required:
+        - finalizationType
+        - actor
+      properties:
+        finalizationType:
+          type: string
+          enum: [POST_DEBIT, POST_CREDIT]
+        ledgerTransactionId:
+          type: string
+        actor:
+          $ref: '#/components/schemas/Actor'
+    ReleaseReservationRequest:
+      type: object
+      required:
+        - releaseReason
+        - actor
+      properties:
+        releaseReason:
+          type: string
+          enum: [CANCELLED, EXPIRED, FAILED_WORKFLOW, RECOVERY]
+        actor:
+          $ref: '#/components/schemas/Actor'
+    StartRebuildRequest:
+      type: object
+      required:
+        - scope
+        - replayContractVersion
+      properties:
+        scope:
+          type: object
+          additionalProperties: true
+        replayContractVersion:
+          type: string
+        restartFromCheckpoint:
+          type: boolean
+          default: true
+    StartReconciliationRequest:
+      type: object
+      required:
+        - scope
+      properties:
+        scope:
+          type: object
+          additionalProperties: true
+        rebuildIfDriftDetected:
+          type: boolean
+          default: false
+    Actor:
+      type: object
+      required:
+        - actorId
+        - actorType
+      properties:
+        actorId:
+          type: string
+        actorType:
+          type: string
+          enum: [USER, SYSTEM, SERVICE]
+    CurrentBalanceView:
+      type: object
+      required:
+        - accountId
+        - currency
+        - ledgerBalance
+        - lockedAmount
+        - pendingDebitAmount
+        - pendingCreditAmount
+        - availableBalance
+        - snapshotVersion
+        - asOfSequence
+        - consistencyMode
+      properties:
+        accountId:
+          type: string
+        currency:
+          type: string
+        ledgerBalance:
+          type: string
+        lockedAmount:
+          type: string
+        pendingDebitAmount:
+          type: string
+        pendingCreditAmount:
+          type: string
+        availableBalance:
+          type: string
+        snapshotVersion:
+          type: integer
+          minimum: 0
+        asOfSequence:
+          type: string
+        asOfTime:
+          type: string
+          format: date-time
+        consistencyMode:
+          type: string
+          enum: [STRONG, DERIVED]
+        reconciliationStatus:
+          type: string
+          enum: [HEALTHY, DRIFT_DETECTED, REBUILDING, RECOVERY_REQUIRED]
+    ReservationOutcome:
+      type: object
+      required:
+        - outcome
+        - code
+        - requestId
+        - requesterScope
+      properties:
+        outcome:
+          type: string
+          enum: [ACCEPTED, REJECTED, DUPLICATE, CONFLICT, DEGRADED]
+        code:
+          type: string
+        requestId:
+          type: string
+        requesterScope:
+          type: string
+        reservationId:
+          type: string
+        balanceVersion:
+          type: integer
+          minimum: 0
+        ledgerTransactionId:
+          type: string
+        message:
+          type: string
+        trace:
+          $ref: '#/components/schemas/Trace'
+    RebuildJob:
+      type: object
+      required:
+        - jobId
+        - status
+        - scope
+        - replayContractVersion
+      properties:
+        jobId:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, RUNNING, SUCCEEDED, FAILED, CANCELLED]
+        scope:
+          type: object
+          additionalProperties: true
+        replayContractVersion:
+          type: string
+        checkpointToken:
+          type: string
+        processedRecordCount:
+          type: integer
+          minimum: 0
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+        failureReason:
+          type: string
+    ReconciliationRunAccepted:
+      type: object
+      required:
+        - reconciliationRunId
+        - status
+      properties:
+        reconciliationRunId:
+          type: string
+        status:
+          type: string
+          enum: [ACCEPTED]
+    Trace:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        causationId:
+          type: string
+        actorId:
+          type: string
+        actorType:
+          type: string
+    ErrorOutcome:
+      type: object
+      required:
+        - outcome
+        - code
+      properties:
+        outcome:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
