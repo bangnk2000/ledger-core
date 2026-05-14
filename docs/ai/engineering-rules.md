@@ -69,3 +69,27 @@ Before generating code, explain:
 
 Optimize for correctness, maintainability, operational stability, auditability,
 explicit architecture, and production safety.
+
+## Ledger Observability Baseline
+
+- Ledger posting flows must emit structured audit events for:
+  `POSTING_ACCEPTED`, `POSTING_REJECTED`, `DUPLICATE_REQUEST`,
+  `CONFLICTING_REQUEST`, and `POSTING_FAILED`.
+- Balance queries must emit the `BALANCE_CALCULATED` audit event.
+- Structured audit logs must include request scope, request id, actor identity,
+  actor type, transaction id when available, and sanitized safe details only.
+- Metrics emitted by the ledger module currently include:
+  `ledger.postings{outcome=accepted|rejected|duplicate|conflict|failed}`,
+  `ledger.postings.duration`, `ledger.balance.requests{outcome=success}`, and
+  `ledger.balance.duration`.
+- New ledger events or metrics should use stable names because dashboards and
+  alerts will bind to them.
+
+## Verification Expectations
+
+- Full verification for the ledger foundation includes domain, application,
+  contract, and PostgreSQL-backed integration tests.
+- Environment-dependent integration coverage relies on Docker/Testcontainers
+  and should be called out explicitly when unavailable.
+- Any remaining verification gap must be recorded in the feature quickstart or
+  release notes with the exact blocked command.

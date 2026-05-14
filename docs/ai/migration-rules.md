@@ -24,6 +24,31 @@ Every database change review MUST include:
   run alongside normal traffic.
 - Index creation on large tables must avoid blocking writes.
 
+## Ledger Foundation Rollout Strategy
+
+- The foundation migration for the ledger module is additive only: create new
+  `ledger_transactions`, `ledger_entries`, and `ledger_idempotency_records`
+  tables plus supporting indexes, constraints, and immutability guardrails.
+- New application code must tolerate the schema existing before traffic is
+  routed to the ledger endpoints.
+- Existing application versions must tolerate the new ledger tables being
+  present but unused during rolling deployment.
+- New columns added to ledger tables in later releases must remain nullable or
+  have safe defaults until all application instances understand them.
+
+## Rollback and Roll-Forward
+
+- Prefer roll-forward for ledger schema defects after deployment because ledger
+  history must remain auditable and additive.
+- If a release must be rolled back at the application layer, keep the additive
+  schema in place and return traffic to the previous compatible application
+  version.
+- Do not attempt destructive rollback of ledger history tables once posting
+  traffic may have used them.
+- If a migration fails before traffic uses the new schema, resolve by
+  completing or superseding the migration with a follow-up Flyway script rather
+  than editing an applied migration in place.
+
 ## Ledger Data Rules
 
 - Ledger history MUST NOT be mutated to correct business mistakes.
@@ -38,3 +63,6 @@ Every database change review MUST include:
 - Lock acquisition risk must be identified before deployment.
 - Application code and migrations must remain compatible during rolling
   updates.
+- Uniqueness and immutability constraints that protect idempotency and ledger
+  history are preferred over application-only checks, but they must be added in
+  a way that does not block normal traffic longer than acceptable.

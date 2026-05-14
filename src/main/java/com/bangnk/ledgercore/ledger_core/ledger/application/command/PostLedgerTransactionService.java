@@ -1,0 +1,146 @@
+package com.bangnk.ledgercore.ledger_core.ledger.application.command;
+
+import com.bangnk.ledgercore.ledger_core.ledger.application.PostingOutcome;
+import com.bangnk.ledgercore.ledger_core.ledger.application.PostingOutcome.LedgerDomainException;
+import com.bangnk.ledgercore.ledger_core.ledger.application.port.in.LedgerUseCases.PostLedgerTransactionUseCase;
+import com.bangnk.ledgercore.ledger_core.ledger.application.port.out.LedgerPorts.AuditEventPublisher;
+import com.bangnk.ledgercore.ledger_core.ledger.application.port.out.LedgerPorts.LedgerEntryRepository;
+import com.bangnk.ledgercore.ledger_core.ledger.application.port.out.LedgerPorts.LedgerTransactionRepository;
+import com.bangnk.ledgercore.ledger_core.ledger.config.LedgerObservabilityConfig.LedgerMetrics;
+import com.bangnk.ledgercore.ledger_core.ledger.domain.model.LedgerTransaction;
+import com.bangnk.ledgercore.ledger_core.ledger.domain.valueobject.AuditTrace;
+import com.bangnk.ledgercore.ledger_core.ledger.domain.valueobject.LedgerIds.LedgerTransactionId;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Map;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class PostLedgerTransactionService implements PostLedgerTransactionUseCase {
+
+	private final LedgerTransactionRepository transactionRepository;
+	private final LedgerEntryRepository entryRepository;
+	private final PostingRequestHasher requestHasher;
+	private final IdempotencyService idempotencyService;
+	private final AuditEventPublisher auditEventPublisher;
+	private final Clock clock;
+	private final Counter duplicateCounter;
+	private final Counter conflictCounter;
+	private final Counter failedCounter;
+	private final Counter acceptedCounter;
+	private final Counter rejectedCounter;
+	private final Timer postingTimer;
+
+	public PostLedgerTransactionService(
+			LedgerTransactionRepository transactionRepository,
+			LedgerEntryRepository entryRepository,
+			PostingRequestHasher requestHasher,
+			IdempotencyService idempotencyService,
+			AuditEventPublisher auditEventPublisher,
+			LedgerMetrics ledgerMetrics,
+			Clock clock
+	) {
+		this.transactionRepository = transactionRepository;
+		this.entryRepository = entryRepository;
+		this.requestHasher = requestHasher;
+		this.idempotencyService = idempotencyService;
+		this.auditEventPublisher = auditEventPublisher;
+		this.clock = clock;
+		this.acceptedCounter = ledgerMetrics.postingOutcome("accepted");
+		this.rejectedCounter = ledgerMetrics.postingOutcome("rejected");
+		this.duplicateCounter = ledgerMetrics.postingOutcome("duplicate");
+		this.conflictCounter = ledgerMetrics.postingOutcome("conflict");
+		this.failedCounter = ledgerMetrics.postingOutcome("failed");
+		this.postingTimer = ledgerMetrics.postingTimer();
+	}
+
+	@Override
+	@Transactional
+	public PostingOutcome post(PostLedgerTransactionCommand command) {
+		Timer.Sample sample = Timer.start();
+		try {
+			var requestHash = requestHasher.hash(command);
+			var existing = idempotencyService.resolveExisting(command.requestIdentity(), requestHash, command.auditTrace());
+			if (existing.isPresent()) {
+				PostingOutcome outcome = existing.get();
+				if (outcome.outcome() == com.bangnk.ledgercore.ledger_core.ledger.domain.valueobject.LedgerEnums.PostingOutcomeType.CONFLICT) {
+					conflictCounter.increment();
+					publish("CONFLICTING_REQUEST", command.auditTrace(), outcome.transactionId(), Map.of("code", outcome.code()));
+				} else {
+					duplicateCounter.increment();
+					publish("DUPLICATE_REQUEST", command.auditTrace(), outcome.transactionId(), Map.of("code", outcome.code()));
+				}
+				return outcome;
+			}
+
+			Instant now = Instant.now(clock);
+			try {
+				var transactionId = LedgerTransactionId.newId();
+				LedgerTransaction ledgerTransaction = LedgerTransaction.post(
+					transactionId,
+					command.businessReference(),
+					command.description(),
+					command.metadata(),
+					command.auditTrace(),
+					command.entries(),
+					now);
+				transactionRepository.save(ledgerTransaction);
+				entryRepository.saveAll(ledgerTransaction.entries());
+				var outcome = PostingOutcome.accepted(
+					"LEDGER_POSTED",
+					"Ledger posting accepted",
+					command.requestIdentity(),
+					transactionId.value().toString(),
+					ledgerTransaction.postedAt(),
+					command.auditTrace());
+				idempotencyService.store(command.requestIdentity(), requestHash, outcome);
+				acceptedCounter.increment();
+				publish("POSTING_ACCEPTED", command.auditTrace(), outcome.transactionId(), Map.of("entries", ledgerTransaction.entries().size()));
+				return outcome;
+			} catch (LedgerDomainException ex) {
+				var transactionId = LedgerTransactionId.newId();
+				var rejected = LedgerTransaction.rejected(
+					transactionId,
+					command.businessReference(),
+					command.description(),
+					command.metadata(),
+					command.auditTrace(),
+					ex.getCode(),
+					ex.getMessage(),
+					now);
+				transactionRepository.save(rejected);
+				var outcome = PostingOutcome.rejected(
+					ex.getCode(),
+					ex.getMessage(),
+					command.requestIdentity(),
+					transactionId.value().toString(),
+					command.auditTrace());
+				idempotencyService.store(command.requestIdentity(), requestHash, outcome);
+				rejectedCounter.increment();
+				publish("POSTING_REJECTED", command.auditTrace(), outcome.transactionId(), Map.of("code", ex.getCode()));
+				return outcome;
+			} catch (RuntimeException ex) {
+				failedCounter.increment();
+				publish("POSTING_FAILED", command.auditTrace(), null, Map.of("code", "LEDGER_POSTING_FAILED"));
+				throw ex;
+			}
+		} finally {
+			sample.stop(postingTimer);
+		}
+	}
+
+	private void publish(String type, AuditTrace trace, String transactionId, Map<String, Object> safeDetails) {
+		auditEventPublisher.publish(new AuditTrace.AuditEvent(
+			type,
+			trace.requestIdentity(),
+			transactionId,
+			trace.actor(),
+			trace.correlationId(),
+			trace.causationId(),
+			Instant.now(clock),
+			safeDetails));
+	}
+}
