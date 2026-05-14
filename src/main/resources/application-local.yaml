@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:54328/ledger-core
+    username: ${LEDGER_DB_USERNAME:user}
+    password: ${LEDGER_DB_PASSWORD:secret}
