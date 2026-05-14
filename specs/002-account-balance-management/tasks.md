@@ -31,23 +31,23 @@
 
 **CRITICAL**: No user story work should begin until this phase is complete.
 
-- [ ] T006 Define balance domain enums in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceEnums.java
-- [ ] T007 [P] Implement AccountId value object in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/valueobject/AccountId.java
-- [ ] T008 [P] Implement CurrencyCode value object in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/valueobject/CurrencyCode.java
-- [ ] T009 [P] Implement MoneyAmount value object in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/valueobject/MoneyAmount.java
-- [ ] T010 [P] Implement RequestIdentity value object in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/valueobject/RequestIdentity.java
-- [ ] T011 [P] Implement ActorContext value object in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/valueobject/ActorContext.java
-- [ ] T012 Implement balance state, reservation, snapshot, rebuild, checkpoint, reconciliation, and idempotency tables in src/main/resources/db/migration/V2__create_balance_management.sql
-- [ ] T013 Define immutable ledger replay input port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/LedgerReplayExportPort.java
-- [ ] T014 Define ledger posting reference port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/LedgerPostingReferencePort.java
-- [ ] T015 Define balance persistence port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/BalanceStateRepositoryPort.java
-- [ ] T016 Define reservation persistence port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/FundsReservationRepositoryPort.java
-- [ ] T017 Define idempotency persistence port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/BalanceIdempotencyRepositoryPort.java
-- [ ] T018 Define rebuild and reconciliation persistence ports in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/BalanceRecoveryRepositoryPort.java
-- [ ] T019 Define balance transaction boundary port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/BalanceTransactionPort.java
-- [ ] T020 Add balance exception and outcome types in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceApplicationErrors.java
-- [ ] T021 Add Spring balance module configuration in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/config/BalanceManagementConfiguration.java
-- [ ] T022 Add HTTP error mapping for balance outcomes in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceApiExceptionHandler.java
+- [X] T006 Define balance domain enums in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceEnums.java
+- [X] T007 [P] Implement AccountId value object in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/valueobject/AccountId.java
+- [X] T008 [P] Implement CurrencyCode value object in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/valueobject/CurrencyCode.java
+- [X] T009 [P] Implement MoneyAmount value object in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/valueobject/MoneyAmount.java
+- [X] T010 [P] Implement RequestIdentity value object in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/valueobject/RequestIdentity.java
+- [X] T011 [P] Implement ActorContext value object in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/valueobject/ActorContext.java
+- [X] T012 Implement balance state, reservation, snapshot, rebuild, checkpoint, reconciliation, and idempotency tables in src/main/resources/db/migration/V2__create_balance_management.sql
+- [X] T013 Define immutable ledger replay input port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/LedgerReplayExportPort.java
+- [X] T014 Define ledger posting reference port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/LedgerPostingReferencePort.java
+- [X] T015 Define balance persistence port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/BalanceStateRepositoryPort.java
+- [X] T016 Define reservation persistence port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/FundsReservationRepositoryPort.java
+- [X] T017 Define idempotency persistence port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/BalanceIdempotencyRepositoryPort.java
+- [X] T018 Define rebuild and reconciliation persistence ports in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/BalanceRecoveryRepositoryPort.java
+- [X] T019 Define balance transaction boundary port in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/out/BalanceTransactionPort.java
+- [X] T020 Add balance exception and outcome types in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceApplicationErrors.java
+- [X] T021 Add Spring balance module configuration in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/config/BalanceManagementConfiguration.java
+- [X] T022 Add HTTP error mapping for balance outcomes in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceApiExceptionHandler.java
 
 **Checkpoint**: Foundation ready. User story implementation can begin in priority order or in parallel by story.
 
