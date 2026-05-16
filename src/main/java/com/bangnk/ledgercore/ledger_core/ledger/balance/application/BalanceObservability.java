@@ -16,6 +16,10 @@ public class BalanceObservability {
 	private final Map<ConsistencyMode, Counter> balanceReadCounters;
 	private final Counter rebuildProcessedCounter;
 	private final Counter reconciliationDiscrepancyCounter;
+	private final Counter contentionCounter;
+	private final Counter retryCounter;
+	private final Counter duplicateCounter;
+	private final Counter failClosedCounter;
 
 	public BalanceObservability(MeterRegistry meterRegistry) {
 		this.reserveOutcomeCounters = new EnumMap<>(BalanceOutcomeType.class);
@@ -44,6 +48,14 @@ public class BalanceObservability {
 		this.reconciliationDiscrepancyCounter = Counter.builder("balance.reconciliation.discrepancy")
 			.tag("severity", "all")
 			.register(meterRegistry);
+		this.contentionCounter = Counter.builder("balance.write.contention")
+			.register(meterRegistry);
+		this.retryCounter = Counter.builder("balance.write.retry")
+			.register(meterRegistry);
+		this.duplicateCounter = Counter.builder("balance.write.duplicate")
+			.register(meterRegistry);
+		this.failClosedCounter = Counter.builder("balance.write.fail.closed")
+			.register(meterRegistry);
 	}
 
 	public void recordReserveOutcome(BalanceOutcomeType outcomeType) {
@@ -64,5 +76,21 @@ public class BalanceObservability {
 
 	public void recordReconciliationDiscrepancy(String severity) {
 		reconciliationDiscrepancyCounter.increment();
+	}
+
+	public void recordContention() {
+		contentionCounter.increment();
+	}
+
+	public void recordRetry(int attempt) {
+		retryCounter.increment();
+	}
+
+	public void recordDuplicate() {
+		duplicateCounter.increment();
+	}
+
+	public void recordFailClosed() {
+		failClosedCounter.increment();
 	}
 }

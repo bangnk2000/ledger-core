@@ -184,17 +184,17 @@
 
 ### Tests for User Story 5
 
-- [ ] T082 [P] [US5] Add retry and lock-timeout integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceContentionRetryIntegrationTest.java
-- [ ] T083 [P] [US5] Add duplicate request and idempotency conflict integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceIdempotencyIntegrationTest.java
-- [ ] T084 [P] [US5] Add degraded state fail-closed integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceFailClosedIntegrationTest.java
+- [X] T082 [P] [US5] Add retry and lock-timeout integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceContentionRetryIntegrationTest.java
+- [X] T083 [P] [US5] Add duplicate request and idempotency conflict integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceIdempotencyIntegrationTest.java
+- [X] T084 [P] [US5] Add degraded state fail-closed integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceFailClosedIntegrationTest.java
 
 ### Implementation for User Story 5
 
-- [ ] T085 [US5] Implement retry policy model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceRetryPolicy.java
-- [ ] T086 [US5] Implement protected write retry executor in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/ProtectedWriteRetryExecutor.java
-- [ ] T087 [US5] Implement idempotency outcome conflict detection in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceIdempotencyService.java
-- [ ] T088 [US5] Implement degraded-state guard for protected writes in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceConsistencyGuard.java
-- [ ] T089 [US5] Add contention, retry, duplicate, and fail-closed observability in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceObservability.java
+- [X] T085 [US5] Implement retry policy model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceRetryPolicy.java
+- [X] T086 [US5] Implement protected write retry executor in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/ProtectedWriteRetryExecutor.java
+- [X] T087 [US5] Implement idempotency outcome conflict detection in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceIdempotencyService.java
+- [X] T088 [US5] Implement degraded-state guard for protected writes in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceConsistencyGuard.java
+- [X] T089 [US5] Add contention, retry, duplicate, and fail-closed observability in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceObservability.java
 
 **Checkpoint**: Protected writes fail closed or retry idempotently under contention and recovery conditions.
 

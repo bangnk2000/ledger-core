@@ -4,6 +4,7 @@ import com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.in.web.Reservati
 import com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.in.web.ReservationDtos.ReleaseReservationRequest.ReleaseReason;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.BalanceApplicationErrors.BalanceOutcome;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.BalanceApplicationErrors.BalanceOutcomeType;
+import com.bangnk.ledgercore.ledger_core.ledger.balance.application.BalanceIdempotencyService.IdempotencyDecision;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.in.ConfirmReservationUseCase;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.in.ReleaseReservationUseCase;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.out.BalanceIdempotencyRepositoryPort;
@@ -30,6 +31,9 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 	private final BalanceStateRepositoryPort balanceStateRepository;
 	private final BalanceIdempotencyRepositoryPort idempotencyRepository;
 	private final BalanceTransactionPort transactionPort;
+	private final ProtectedWriteRetryExecutor retryExecutor;
+	private final BalanceIdempotencyService idempotencyService;
+	private final BalanceConsistencyGuard consistencyGuard;
 	private final BalanceObservability observability;
 	private final Clock clock;
 
@@ -38,6 +42,9 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 			BalanceStateRepositoryPort balanceStateRepository,
 			BalanceIdempotencyRepositoryPort idempotencyRepository,
 			BalanceTransactionPort transactionPort,
+			ProtectedWriteRetryExecutor retryExecutor,
+			BalanceIdempotencyService idempotencyService,
+			BalanceConsistencyGuard consistencyGuard,
 			BalanceObservability observability,
 			Clock clock
 	) {
@@ -45,6 +52,9 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 		this.balanceStateRepository = balanceStateRepository;
 		this.idempotencyRepository = idempotencyRepository;
 		this.transactionPort = transactionPort;
+		this.retryExecutor = retryExecutor;
+		this.idempotencyService = idempotencyService;
+		this.consistencyGuard = consistencyGuard;
 		this.observability = observability;
 		this.clock = clock;
 	}
@@ -52,31 +62,34 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 	@Override
 	public ReservationLifecycleResult confirm(UUID reservationId, RequestIdentity requestIdentity, FinalizationType finalizationType, String ledgerTransactionId,
 			ActorContext actorContext) {
-		return transactionPort.withinProtectedWrite(() -> doConfirm(reservationId, requestIdentity, finalizationType, ledgerTransactionId, actorContext));
+		consistencyGuard.assertWritable(requestIdentity);
+		return retryExecutor.execute(
+			() -> transactionPort.withinProtectedWrite(() -> doConfirm(reservationId, requestIdentity, finalizationType, ledgerTransactionId, actorContext)));
 	}
 
 	@Override
 	public ReservationReleaseResult release(UUID reservationId, RequestIdentity requestIdentity, ReleaseReason releaseReason, ActorContext actorContext) {
-		return transactionPort.withinProtectedWrite(() -> doRelease(reservationId, requestIdentity, releaseReason, actorContext));
+		consistencyGuard.assertWritable(requestIdentity);
+		return retryExecutor.execute(() -> transactionPort.withinProtectedWrite(() -> doRelease(reservationId, requestIdentity, releaseReason, actorContext)));
 	}
 
 	private ReservationLifecycleResult doConfirm(UUID reservationId, RequestIdentity requestIdentity, FinalizationType finalizationType, String ledgerTransactionId,
 			ActorContext actorContext) {
 		Instant now = Instant.now(clock);
 		RequestHash requestHash = new RequestHash(reservationId + "|" + finalizationType + "|" + ledgerTransactionId);
-		Optional<BalanceIdempotencyRepositoryPort.IdempotencyRecord> existing = idempotencyRepository.find(requestIdentity);
-		if (existing.isPresent()) {
-			var stored = existing.orElseThrow();
-			idempotencyRepository.markSeen(requestIdentity, now);
-			if (!stored.sameIntent(requestHash, BalanceMutationType.CONFIRM)) {
-				var conflict = BalanceOutcome.conflict("BALANCE_IDEMPOTENCY_CONFLICT", "Request identity already used for a different confirmation intent",
-					requestIdentity);
-				observability.recordLifecycleOutcome(BalanceOutcomeType.CONFLICT);
-				return new ReservationLifecycleResult(conflict, reservationId);
-			}
-			var duplicate = BalanceOutcome.duplicate("BALANCE_RESERVATION_CONFIRM_DUPLICATE", "Duplicate confirmation request", requestIdentity);
-			observability.recordLifecycleOutcome(BalanceOutcomeType.DUPLICATE);
-			return new ReservationLifecycleResult(duplicate, reservationId);
+		Optional<IdempotencyDecision> decision = idempotencyService.evaluate(
+			requestIdentity,
+			requestHash,
+			BalanceMutationType.CONFIRM,
+			"BALANCE_RESERVATION_CONFIRM_DUPLICATE",
+			"Duplicate confirmation request",
+			"Request identity already used for a different confirmation intent",
+			now);
+		if (decision.isPresent()) {
+			IdempotencyDecision evaluated = decision.orElseThrow();
+			observability.recordLifecycleOutcome(evaluated.outcome().outcome());
+			observability.recordDuplicate();
+			return new ReservationLifecycleResult(evaluated.outcome(), reservationId);
 		}
 
 		FundsReservation reservation = reservationRepository.findByIdForUpdate(reservationId)
@@ -101,19 +114,19 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 	private ReservationReleaseResult doRelease(UUID reservationId, RequestIdentity requestIdentity, ReleaseReason releaseReason, ActorContext actorContext) {
 		Instant now = Instant.now(clock);
 		RequestHash requestHash = new RequestHash(reservationId + "|" + releaseReason);
-		Optional<BalanceIdempotencyRepositoryPort.IdempotencyRecord> existing = idempotencyRepository.find(requestIdentity);
-		if (existing.isPresent()) {
-			var stored = existing.orElseThrow();
-			idempotencyRepository.markSeen(requestIdentity, now);
-			if (!stored.sameIntent(requestHash, BalanceMutationType.RELEASE)) {
-				var conflict = BalanceOutcome.conflict("BALANCE_IDEMPOTENCY_CONFLICT", "Request identity already used for a different release intent",
-					requestIdentity);
-				observability.recordLifecycleOutcome(BalanceOutcomeType.CONFLICT);
-				return new ReservationReleaseResult(conflict, reservationId);
-			}
-			var duplicate = BalanceOutcome.duplicate("BALANCE_RESERVATION_RELEASE_DUPLICATE", "Duplicate release request", requestIdentity);
-			observability.recordLifecycleOutcome(BalanceOutcomeType.DUPLICATE);
-			return new ReservationReleaseResult(duplicate, reservationId);
+		Optional<IdempotencyDecision> decision = idempotencyService.evaluate(
+			requestIdentity,
+			requestHash,
+			BalanceMutationType.RELEASE,
+			"BALANCE_RESERVATION_RELEASE_DUPLICATE",
+			"Duplicate release request",
+			"Request identity already used for a different release intent",
+			now);
+		if (decision.isPresent()) {
+			IdempotencyDecision evaluated = decision.orElseThrow();
+			observability.recordLifecycleOutcome(evaluated.outcome().outcome());
+			observability.recordDuplicate();
+			return new ReservationReleaseResult(evaluated.outcome(), reservationId);
 		}
 
 		FundsReservation reservation = reservationRepository.findByIdForUpdate(reservationId)

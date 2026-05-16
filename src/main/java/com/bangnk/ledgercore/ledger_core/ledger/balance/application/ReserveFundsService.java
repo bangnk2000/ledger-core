@@ -2,6 +2,7 @@ package com.bangnk.ledgercore.ledger_core.ledger.balance.application;
 
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.BalanceApplicationErrors.BalanceOutcome;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.BalanceApplicationErrors.BalanceOutcomeType;
+import com.bangnk.ledgercore.ledger_core.ledger.balance.application.BalanceIdempotencyService.IdempotencyDecision;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.command.BalanceMutationRequest;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.in.ReserveFundsUseCase;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.out.BalanceIdempotencyRepositoryPort;
@@ -25,6 +26,9 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 	private final FundsReservationRepositoryPort reservationRepository;
 	private final BalanceIdempotencyRepositoryPort idempotencyRepository;
 	private final BalanceTransactionPort transactionPort;
+	private final ProtectedWriteRetryExecutor retryExecutor;
+	private final BalanceIdempotencyService idempotencyService;
+	private final BalanceConsistencyGuard consistencyGuard;
 	private final BalanceObservability observability;
 	private final Clock clock;
 
@@ -33,6 +37,9 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 			FundsReservationRepositoryPort reservationRepository,
 			BalanceIdempotencyRepositoryPort idempotencyRepository,
 			BalanceTransactionPort transactionPort,
+			ProtectedWriteRetryExecutor retryExecutor,
+			BalanceIdempotencyService idempotencyService,
+			BalanceConsistencyGuard consistencyGuard,
 			BalanceObservability observability,
 			Clock clock
 	) {
@@ -40,33 +47,35 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 		this.reservationRepository = reservationRepository;
 		this.idempotencyRepository = idempotencyRepository;
 		this.transactionPort = transactionPort;
+		this.retryExecutor = retryExecutor;
+		this.idempotencyService = idempotencyService;
+		this.consistencyGuard = consistencyGuard;
 		this.observability = observability;
 		this.clock = clock;
 	}
 
 	@Override
 	public ReserveFundsResult reserve(BalanceMutationRequest request) {
-		return transactionPort.withinProtectedWrite(() -> reserveInTransaction(request));
+		consistencyGuard.assertWritable(request.requestIdentity());
+		return retryExecutor.execute(() -> transactionPort.withinProtectedWrite(() -> reserveInTransaction(request)));
 	}
 
 	private ReserveFundsResult reserveInTransaction(BalanceMutationRequest request) {
 		Instant now = Instant.now(clock);
 		RequestHash requestHash = new RequestHash(request.requestIdentity().requestId() + "|" + request.amount().value().toPlainString());
-		Optional<BalanceIdempotencyRepositoryPort.IdempotencyRecord> existing = idempotencyRepository.find(request.requestIdentity());
-		if (existing.isPresent()) {
-			var stored = existing.orElseThrow();
-			idempotencyRepository.markSeen(request.requestIdentity(), now);
-			if (!stored.sameIntent(requestHash, BalanceMutationType.RESERVE)) {
-				BalanceOutcome outcome = BalanceOutcome.conflict(
-					"BALANCE_IDEMPOTENCY_CONFLICT",
-					"Request identity already used for a different reservation intent",
-					request.requestIdentity());
-				observability.recordReserveOutcome(BalanceOutcomeType.CONFLICT);
-				return new ReserveFundsResult(outcome, payloadReservationId(stored.responsePayload()));
-			}
-			BalanceOutcome outcome = BalanceOutcome.duplicate("BALANCE_RESERVATION_DUPLICATE", "Duplicate reservation request", request.requestIdentity());
-			observability.recordReserveOutcome(BalanceOutcomeType.DUPLICATE);
-			return new ReserveFundsResult(outcome, payloadReservationId(stored.responsePayload()));
+		Optional<IdempotencyDecision> decision = idempotencyService.evaluate(
+			request.requestIdentity(),
+			requestHash,
+			BalanceMutationType.RESERVE,
+			"BALANCE_RESERVATION_DUPLICATE",
+			"Duplicate reservation request",
+			"Request identity already used for a different reservation intent",
+			now);
+		if (decision.isPresent()) {
+			IdempotencyDecision evaluated = decision.orElseThrow();
+			observability.recordReserveOutcome(evaluated.outcome().outcome());
+			observability.recordDuplicate();
+			return new ReserveFundsResult(evaluated.outcome(), payloadReservationId(evaluated.responsePayload()));
 		}
 
 		var key = new BalanceStateRepositoryPort.BalanceStateKey(request.accountIds().getFirst(), request.currency());
