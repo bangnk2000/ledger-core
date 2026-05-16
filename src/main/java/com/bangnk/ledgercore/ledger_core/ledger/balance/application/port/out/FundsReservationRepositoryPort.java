@@ -7,6 +7,7 @@ import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.valueobject.Curre
 import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.valueobject.MoneyAmount;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.valueobject.RequestIdentity;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +18,8 @@ public interface FundsReservationRepositoryPort {
 	Optional<FundsReservationRecord> findByIdForUpdate(UUID reservationId);
 
 	Optional<FundsReservationRecord> findByRequestIdentity(RequestIdentity requestIdentity);
+
+	List<FundsReservationRecord> findExpiredActive(Instant asOf);
 
 	FundsReservationRecord save(FundsReservationRecord reservation);
 

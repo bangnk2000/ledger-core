@@ -1,6 +1,8 @@
 package com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.in.web;
 
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.BalanceApplicationErrors.BalanceOutcome;
+import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.in.ConfirmReservationUseCase.ReservationLifecycleResult;
+import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.in.ReleaseReservationUseCase.ReservationReleaseResult;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.in.ReserveFundsUseCase.ReserveFundsResult;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.model.BalanceEnums.BalanceActorType;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.model.BalanceEnums.BalanceDirection;
@@ -53,6 +55,48 @@ public final class ReservationDtos {
 				outcome.requestIdentity().requestId(),
 				result.reservationId(),
 				outcome.occurredAt());
+		}
+
+		static ReservationOutcomeDto from(ReservationLifecycleResult result) {
+			return from(result.outcome(), result.reservationId());
+		}
+
+		static ReservationOutcomeDto from(ReservationReleaseResult result) {
+			return from(result.outcome(), result.reservationId());
+		}
+
+		private static ReservationOutcomeDto from(BalanceOutcome outcome, UUID reservationId) {
+			return new ReservationOutcomeDto(
+				outcome.outcome().name(),
+				outcome.code(),
+				outcome.message(),
+				outcome.requestIdentity().requesterScope(),
+				outcome.requestIdentity().requestId(),
+				reservationId,
+				outcome.occurredAt());
+		}
+	}
+
+	public record ConfirmReservationRequest(
+			@NotNull FinalizationType finalizationType,
+			String ledgerTransactionId,
+			@NotNull @Valid ActorDto actor
+	) {
+		public enum FinalizationType {
+			POST_DEBIT,
+			POST_CREDIT
+		}
+	}
+
+	public record ReleaseReservationRequest(
+			@NotNull ReleaseReason releaseReason,
+			@NotNull @Valid ActorDto actor
+	) {
+		public enum ReleaseReason {
+			CANCELLED,
+			EXPIRED,
+			FAILED_WORKFLOW,
+			RECOVERY
 		}
 	}
 }

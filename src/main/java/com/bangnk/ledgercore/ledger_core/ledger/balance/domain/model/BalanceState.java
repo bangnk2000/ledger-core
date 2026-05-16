@@ -75,6 +75,52 @@ public record BalanceState(
 		return next;
 	}
 
+	public BalanceState confirm(BalanceDirection direction, MoneyAmount amount, Instant now) {
+		MoneyAmount nextLedger = switch (direction) {
+			case DEBIT -> ledgerBalance.subtract(amount);
+			case CREDIT -> ledgerBalance.add(amount);
+		};
+		MoneyAmount nextLocked = switch (direction) {
+			case DEBIT -> lockedAmount.subtract(amount);
+			case CREDIT -> lockedAmount;
+		};
+		if (nextLedger.isNegative() || nextLocked.isNegative()) {
+			throw new IllegalArgumentException("Cannot confirm reservation due to invalid balance transition");
+		}
+		return new BalanceState(
+			key,
+			nextLedger,
+			nextLocked,
+			pendingDebitAmount,
+			pendingCreditAmount,
+			version + 1,
+			ledgerAsOfSequence + 1,
+			reservationAsOfSequence + 1,
+			reconciliationStatus,
+			now);
+	}
+
+	public BalanceState release(BalanceDirection direction, MoneyAmount amount, Instant now) {
+		MoneyAmount nextLocked = switch (direction) {
+			case DEBIT -> lockedAmount.subtract(amount);
+			case CREDIT -> lockedAmount;
+		};
+		if (nextLocked.isNegative()) {
+			throw new IllegalArgumentException("Cannot release reservation due to invalid locked balance");
+		}
+		return new BalanceState(
+			key,
+			ledgerBalance,
+			nextLocked,
+			pendingDebitAmount,
+			pendingCreditAmount,
+			version + 1,
+			ledgerAsOfSequence,
+			reservationAsOfSequence + 1,
+			reconciliationStatus,
+			now);
+	}
+
 	public BalanceStateRecord toRecord() {
 		return new BalanceStateRecord(
 			key,

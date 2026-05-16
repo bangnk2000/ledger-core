@@ -27,6 +27,10 @@ interface FundsReservationJpaRepository extends JpaRepository<FundsReservationJp
 	@Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
 	@Query("select r from FundsReservationJpaEntity r where r.reservationId = :reservationId")
 	Optional<FundsReservationJpaEntity> findByIdForUpdate(@Param("reservationId") UUID reservationId);
+
+	List<FundsReservationJpaEntity> findByStatusAndExpiresAtLessThanEqual(
+		com.bangnk.ledgercore.ledger_core.ledger.balance.domain.model.BalanceEnums.ReservationStatus status,
+		java.time.Instant expiresAt);
 }
 
 interface BalanceIdempotencyJpaRepository extends JpaRepository<BalanceIdempotencyJpaEntity, BalanceIdempotencyJpaEntity.BalanceIdempotencyKey> {

@@ -5,6 +5,8 @@ import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.valueobject.Accou
 import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.valueobject.CurrencyCode;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.valueobject.MoneyAmount;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.valueobject.RequestIdentity;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -32,6 +34,16 @@ public class JpaFundsReservationRepositoryAdapter implements FundsReservationRep
 	public Optional<FundsReservationRecord> findByRequestIdentity(RequestIdentity requestIdentity) {
 		return repository.findByRequesterScopeAndRequestId(requestIdentity.requesterScope(), requestIdentity.requestId())
 			.map(this::toRecord);
+	}
+
+	@Override
+	public List<FundsReservationRecord> findExpiredActive(Instant asOf) {
+		return repository.findByStatusAndExpiresAtLessThanEqual(
+				com.bangnk.ledgercore.ledger_core.ledger.balance.domain.model.BalanceEnums.ReservationStatus.ACTIVE,
+				asOf)
+			.stream()
+			.map(this::toRecord)
+			.toList();
 	}
 
 	@Override

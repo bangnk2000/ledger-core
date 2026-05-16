@@ -122,21 +122,21 @@
 
 ### Tests for User Story 3
 
-- [ ] T052 [P] [US3] Add confirm reservation HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ConfirmReservationContractTest.java
-- [ ] T053 [P] [US3] Add release reservation HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReleaseReservationContractTest.java
-- [ ] T054 [P] [US3] Add reservation lifecycle integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReservationLifecycleIntegrationTest.java
-- [ ] T055 [P] [US3] Add reservation recovery integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReservationRecoveryIntegrationTest.java
+- [X] T052 [P] [US3] Add confirm reservation HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ConfirmReservationContractTest.java
+- [X] T053 [P] [US3] Add release reservation HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReleaseReservationContractTest.java
+- [X] T054 [P] [US3] Add reservation lifecycle integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReservationLifecycleIntegrationTest.java
+- [X] T055 [P] [US3] Add reservation recovery integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReservationRecoveryIntegrationTest.java
 
 ### Implementation for User Story 3
 
-- [ ] T056 [US3] Define confirm reservation use case in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/ConfirmReservationUseCase.java
-- [ ] T057 [US3] Define release reservation use case in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/ReleaseReservationUseCase.java
-- [ ] T058 [US3] Implement reservation lifecycle service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/ReservationLifecycleService.java
-- [ ] T059 [US3] Implement ledger posting reference adapter stub boundary in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/ContractLedgerPostingReferenceAdapter.java
-- [ ] T060 [US3] Extend reservation controller with confirm and release endpoints in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReservationController.java
-- [ ] T061 [US3] Extend reservation DTOs for confirm and release requests in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReservationDtos.java
-- [ ] T062 [US3] Add expiration processing service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/ReservationExpirationService.java
-- [ ] T063 [US3] Add lifecycle metrics and structured logs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceObservability.java
+- [X] T056 [US3] Define confirm reservation use case in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/ConfirmReservationUseCase.java
+- [X] T057 [US3] Define release reservation use case in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/ReleaseReservationUseCase.java
+- [X] T058 [US3] Implement reservation lifecycle service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/ReservationLifecycleService.java
+- [X] T059 [US3] Implement ledger posting reference adapter stub boundary in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/ContractLedgerPostingReferenceAdapter.java
+- [X] T060 [US3] Extend reservation controller with confirm and release endpoints in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReservationController.java
+- [X] T061 [US3] Extend reservation DTOs for confirm and release requests in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReservationDtos.java
+- [X] T062 [US3] Add expiration processing service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/ReservationExpirationService.java
+- [X] T063 [US3] Add lifecycle metrics and structured logs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceObservability.java
 
 **Checkpoint**: Reservation creation, confirmation, release, cancellation, expiration, and recovery are independently testable.
 

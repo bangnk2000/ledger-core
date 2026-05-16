@@ -1,7 +1,11 @@
 package com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.in.web;
 
 import com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.in.web.ReservationDtos.ReservationOutcomeDto;
+import com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.in.web.ReservationDtos.ConfirmReservationRequest;
+import com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.in.web.ReservationDtos.ReleaseReservationRequest;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.in.web.ReservationDtos.ReserveRequest;
+import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.in.ConfirmReservationUseCase;
+import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.in.ReleaseReservationUseCase;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.command.BalanceMutationRequest;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.port.in.ReserveFundsUseCase;
 import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.model.BalanceEnums.BalanceMutationType;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Validated
 @RestController
@@ -28,9 +33,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReservationController {
 
 	private final ReserveFundsUseCase reserveFundsUseCase;
+	private final ConfirmReservationUseCase confirmReservationUseCase;
+	private final ReleaseReservationUseCase releaseReservationUseCase;
 
-	public ReservationController(ReserveFundsUseCase reserveFundsUseCase) {
+	public ReservationController(
+			ReserveFundsUseCase reserveFundsUseCase,
+			ConfirmReservationUseCase confirmReservationUseCase,
+			ReleaseReservationUseCase releaseReservationUseCase) {
 		this.reserveFundsUseCase = reserveFundsUseCase;
+		this.confirmReservationUseCase = confirmReservationUseCase;
+		this.releaseReservationUseCase = releaseReservationUseCase;
 	}
 
 	@PostMapping
@@ -60,5 +72,38 @@ public class ReservationController {
 			case FAILED -> HttpStatus.INTERNAL_SERVER_ERROR;
 		};
 		return ResponseEntity.status(status).body(ReservationOutcomeDto.from(result));
+	}
+
+	@PostMapping("/{reservationId}/confirm")
+	public ResponseEntity<ReservationOutcomeDto> confirm(
+			@PathVariable java.util.UUID reservationId,
+			@RequestHeader("Idempotency-Key") String idempotencyKey,
+			@RequestHeader("X-Requester-Scope") String requesterScope,
+			@RequestHeader(value = "X-Correlation-Id", required = false) String correlationId,
+			@Valid @RequestBody ConfirmReservationRequest request
+	) {
+		var result = confirmReservationUseCase.confirm(
+			reservationId,
+			new RequestIdentity(requesterScope, idempotencyKey),
+			request.finalizationType(),
+			request.ledgerTransactionId(),
+			new ActorContext(request.actor().actorId(), request.actor().actorType(), correlationId, request.actor().causationId()));
+		return ResponseEntity.ok(ReservationOutcomeDto.from(result));
+	}
+
+	@PostMapping("/{reservationId}/release")
+	public ResponseEntity<ReservationOutcomeDto> release(
+			@PathVariable java.util.UUID reservationId,
+			@RequestHeader("Idempotency-Key") String idempotencyKey,
+			@RequestHeader("X-Requester-Scope") String requesterScope,
+			@RequestHeader(value = "X-Correlation-Id", required = false) String correlationId,
+			@Valid @RequestBody ReleaseReservationRequest request
+	) {
+		var result = releaseReservationUseCase.release(
+			reservationId,
+			new RequestIdentity(requesterScope, idempotencyKey),
+			request.releaseReason(),
+			new ActorContext(request.actor().actorId(), request.actor().actorType(), correlationId, request.actor().causationId()));
+		return ResponseEntity.ok(ReservationOutcomeDto.from(result));
 	}
 }

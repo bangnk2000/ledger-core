@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class BalanceObservability {
 
 	private final Map<BalanceOutcomeType, Counter> reserveOutcomeCounters;
+	private final Map<BalanceOutcomeType, Counter> lifecycleOutcomeCounters;
 	private final Map<ConsistencyMode, Counter> balanceReadCounters;
 
 	public BalanceObservability(MeterRegistry meterRegistry) {
@@ -19,6 +20,13 @@ public class BalanceObservability {
 		for (BalanceOutcomeType outcomeType : BalanceOutcomeType.values()) {
 			reserveOutcomeCounters.put(outcomeType,
 				Counter.builder("balance.reserve.outcome")
+					.tag("outcome", outcomeType.name().toLowerCase())
+					.register(meterRegistry));
+		}
+		this.lifecycleOutcomeCounters = new EnumMap<>(BalanceOutcomeType.class);
+		for (BalanceOutcomeType outcomeType : BalanceOutcomeType.values()) {
+			lifecycleOutcomeCounters.put(outcomeType,
+				Counter.builder("balance.lifecycle.outcome")
 					.tag("outcome", outcomeType.name().toLowerCase())
 					.register(meterRegistry));
 		}
@@ -37,5 +45,9 @@ public class BalanceObservability {
 
 	public void recordBalanceRead(ConsistencyMode consistencyMode) {
 		balanceReadCounters.get(consistencyMode).increment();
+	}
+
+	public void recordLifecycleOutcome(BalanceOutcomeType outcomeType) {
+		lifecycleOutcomeCounters.get(outcomeType).increment();
 	}
 }

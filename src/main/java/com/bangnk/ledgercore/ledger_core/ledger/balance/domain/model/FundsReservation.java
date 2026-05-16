@@ -84,4 +84,49 @@ public record FundsReservation(
 			createdAt,
 			updatedAt);
 	}
+
+	public FundsReservation confirm(String ledgerTxnId, String confirmationRef, Instant now) {
+		if (status != ReservationStatus.ACTIVE && status != ReservationStatus.RECOVERY_PENDING) {
+			throw new IllegalArgumentException("Reservation cannot be confirmed from status " + status);
+		}
+		return new FundsReservation(
+			reservationId,
+			requestIdentity,
+			accountId,
+			currency,
+			direction,
+			amount,
+			businessReference,
+			ReservationStatus.CONFIRMED,
+			expiresAt,
+			ledgerTxnId,
+			confirmationRef,
+			createdAt,
+			now);
+	}
+
+	public FundsReservation release(ReservationStatus nextStatus, Instant now) {
+		if (nextStatus != ReservationStatus.CANCELLED
+				&& nextStatus != ReservationStatus.EXPIRED
+				&& nextStatus != ReservationStatus.RECOVERY_PENDING) {
+			throw new IllegalArgumentException("Unsupported release status " + nextStatus);
+		}
+		if (status != ReservationStatus.ACTIVE && status != ReservationStatus.RECOVERY_PENDING) {
+			throw new IllegalArgumentException("Reservation cannot be released from status " + status);
+		}
+		return new FundsReservation(
+			reservationId,
+			requestIdentity,
+			accountId,
+			currency,
+			direction,
+			amount,
+			businessReference,
+			nextStatus,
+			expiresAt,
+			ledgerTransactionId,
+			confirmationReference,
+			createdAt,
+			now);
+	}
 }
