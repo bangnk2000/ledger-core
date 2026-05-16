@@ -39,3 +39,13 @@ interface BalanceIdempotencyJpaRepository extends JpaRepository<BalanceIdempoten
 interface BalanceSnapshotJpaRepository extends JpaRepository<BalanceSnapshotJpaEntity, UUID> {
 	Optional<BalanceSnapshotJpaEntity> findTopByAccountIdAndCurrencyOrderBySnapshotVersionDesc(String accountId, String currency);
 }
+
+interface BalanceRebuildJobJpaRepository extends JpaRepository<BalanceRebuildJobJpaEntity, UUID> {
+}
+
+interface BalanceRebuildCheckpointJpaRepository extends JpaRepository<BalanceRebuildCheckpointJpaEntity, UUID> {
+	Optional<BalanceRebuildCheckpointJpaEntity> findTopByJobIdOrderByCreatedAtDesc(UUID jobId);
+}
+
+interface BalanceReconciliationRecordJpaRepository extends JpaRepository<BalanceReconciliationRecordJpaEntity, UUID> {
+}

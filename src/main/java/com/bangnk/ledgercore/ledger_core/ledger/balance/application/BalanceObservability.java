@@ -14,6 +14,8 @@ public class BalanceObservability {
 	private final Map<BalanceOutcomeType, Counter> reserveOutcomeCounters;
 	private final Map<BalanceOutcomeType, Counter> lifecycleOutcomeCounters;
 	private final Map<ConsistencyMode, Counter> balanceReadCounters;
+	private final Counter rebuildProcessedCounter;
+	private final Counter reconciliationDiscrepancyCounter;
 
 	public BalanceObservability(MeterRegistry meterRegistry) {
 		this.reserveOutcomeCounters = new EnumMap<>(BalanceOutcomeType.class);
@@ -37,6 +39,11 @@ public class BalanceObservability {
 					.tag("consistency", mode.name().toLowerCase())
 					.register(meterRegistry));
 		}
+		this.rebuildProcessedCounter = Counter.builder("balance.rebuild.processed.records")
+			.register(meterRegistry);
+		this.reconciliationDiscrepancyCounter = Counter.builder("balance.reconciliation.discrepancy")
+			.tag("severity", "all")
+			.register(meterRegistry);
 	}
 
 	public void recordReserveOutcome(BalanceOutcomeType outcomeType) {
@@ -49,5 +56,13 @@ public class BalanceObservability {
 
 	public void recordLifecycleOutcome(BalanceOutcomeType outcomeType) {
 		lifecycleOutcomeCounters.get(outcomeType).increment();
+	}
+
+	public void recordRebuildProgress(long processedRecords) {
+		rebuildProcessedCounter.increment(processedRecords);
+	}
+
+	public void recordReconciliationDiscrepancy(String severity) {
+		reconciliationDiscrepancyCounter.increment();
 	}
 }

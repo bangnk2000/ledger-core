@@ -150,27 +150,27 @@
 
 ### Tests for User Story 4
 
-- [ ] T064 [P] [US4] Add rebuild job HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceRebuildContractTest.java
-- [ ] T065 [P] [US4] Add reconciliation HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceReconciliationContractTest.java
-- [ ] T066 [P] [US4] Add deterministic replay integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReplayRebuildIntegrationTest.java
-- [ ] T067 [P] [US4] Add reconciliation drift integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReconciliationIntegrationTest.java
+- [X] T064 [P] [US4] Add rebuild job HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceRebuildContractTest.java
+- [X] T065 [P] [US4] Add reconciliation HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceReconciliationContractTest.java
+- [X] T066 [P] [US4] Add deterministic replay integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReplayRebuildIntegrationTest.java
+- [X] T067 [P] [US4] Add reconciliation drift integration test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReconciliationIntegrationTest.java
 
 ### Implementation for User Story 4
 
-- [ ] T068 [P] [US4] Implement BalanceRebuildJob model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceRebuildJob.java
-- [ ] T069 [P] [US4] Implement BalanceRebuildCheckpoint model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceRebuildCheckpoint.java
-- [ ] T070 [P] [US4] Implement BalanceReconciliationRecord model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceReconciliationRecord.java
-- [ ] T071 [US4] Define rebuild use cases in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/BalanceRebuildUseCase.java
-- [ ] T072 [US4] Define reconciliation use case in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/BalanceReconciliationUseCase.java
-- [ ] T073 [US4] Implement replay ordering service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceReplayOrderingService.java
-- [ ] T074 [US4] Implement rebuild application service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceRebuildService.java
-- [ ] T075 [US4] Implement reconciliation application service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceReconciliationService.java
-- [ ] T076 [US4] Implement recovery repository adapter in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/JpaBalanceRecoveryRepositoryAdapter.java
-- [ ] T077 [US4] Implement ledger replay export adapter boundary in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/ContractLedgerReplayExportAdapter.java
-- [ ] T078 [US4] Implement rebuild controller in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceRebuildController.java
-- [ ] T079 [US4] Implement reconciliation controller in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceReconciliationController.java
-- [ ] T080 [US4] Implement rebuild and reconciliation DTOs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceRecoveryDtos.java
-- [ ] T081 [US4] Add rebuild progress and reconciliation discrepancy metrics in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceObservability.java
+- [X] T068 [P] [US4] Implement BalanceRebuildJob model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceRebuildJob.java
+- [X] T069 [P] [US4] Implement BalanceRebuildCheckpoint model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceRebuildCheckpoint.java
+- [X] T070 [P] [US4] Implement BalanceReconciliationRecord model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceReconciliationRecord.java
+- [X] T071 [US4] Define rebuild use cases in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/BalanceRebuildUseCase.java
+- [X] T072 [US4] Define reconciliation use case in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/BalanceReconciliationUseCase.java
+- [X] T073 [US4] Implement replay ordering service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceReplayOrderingService.java
+- [X] T074 [US4] Implement rebuild application service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceRebuildService.java
+- [X] T075 [US4] Implement reconciliation application service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceReconciliationService.java
+- [X] T076 [US4] Implement recovery repository adapter in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/JpaBalanceRecoveryRepositoryAdapter.java
+- [X] T077 [US4] Implement ledger replay export adapter boundary in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/ContractLedgerReplayExportAdapter.java
+- [X] T078 [US4] Implement rebuild controller in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceRebuildController.java
+- [X] T079 [US4] Implement reconciliation controller in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceReconciliationController.java
+- [X] T080 [US4] Implement rebuild and reconciliation DTOs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceRecoveryDtos.java
+- [X] T081 [US4] Add rebuild progress and reconciliation discrepancy metrics in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceObservability.java
 
 **Checkpoint**: Rebuild and reconciliation can run independently from immutable history and report drift.
 
