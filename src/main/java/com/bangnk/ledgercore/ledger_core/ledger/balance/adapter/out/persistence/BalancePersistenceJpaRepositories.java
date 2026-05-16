@@ -31,3 +31,7 @@ interface FundsReservationJpaRepository extends JpaRepository<FundsReservationJp
 
 interface BalanceIdempotencyJpaRepository extends JpaRepository<BalanceIdempotencyJpaEntity, BalanceIdempotencyJpaEntity.BalanceIdempotencyKey> {
 }
+
+interface BalanceSnapshotJpaRepository extends JpaRepository<BalanceSnapshotJpaEntity, UUID> {
+	Optional<BalanceSnapshotJpaEntity> findTopByAccountIdAndCurrencyOrderBySnapshotVersionDesc(String accountId, String currency);
+}

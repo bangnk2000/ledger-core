@@ -1,6 +1,7 @@
 package com.bangnk.ledgercore.ledger_core.ledger.balance.application;
 
 import com.bangnk.ledgercore.ledger_core.ledger.balance.application.BalanceApplicationErrors.BalanceOutcomeType;
+import com.bangnk.ledgercore.ledger_core.ledger.balance.domain.model.BalanceSnapshot.ConsistencyMode;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.EnumMap;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class BalanceObservability {
 
 	private final Map<BalanceOutcomeType, Counter> reserveOutcomeCounters;
+	private final Map<ConsistencyMode, Counter> balanceReadCounters;
 
 	public BalanceObservability(MeterRegistry meterRegistry) {
 		this.reserveOutcomeCounters = new EnumMap<>(BalanceOutcomeType.class);
@@ -20,9 +22,20 @@ public class BalanceObservability {
 					.tag("outcome", outcomeType.name().toLowerCase())
 					.register(meterRegistry));
 		}
+		this.balanceReadCounters = new EnumMap<>(ConsistencyMode.class);
+		for (ConsistencyMode mode : ConsistencyMode.values()) {
+			balanceReadCounters.put(mode,
+				Counter.builder("balance.read.consistency")
+					.tag("consistency", mode.name().toLowerCase())
+					.register(meterRegistry));
+		}
 	}
 
 	public void recordReserveOutcome(BalanceOutcomeType outcomeType) {
 		reserveOutcomeCounters.get(outcomeType).increment();
+	}
+
+	public void recordBalanceRead(ConsistencyMode consistencyMode) {
+		balanceReadCounters.get(consistencyMode).increment();
 	}
 }

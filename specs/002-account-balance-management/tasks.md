@@ -96,19 +96,19 @@
 
 ### Tests for User Story 2
 
-- [ ] T042 [P] [US2] Add current balance HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/GetCurrentBalanceContractTest.java
-- [ ] T043 [P] [US2] Add current balance integration test for zero and populated balances in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceSnapshotIntegrationTest.java
-- [ ] T044 [P] [US2] Add snapshot derivation domain tests in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/BalanceSnapshotTest.java
+- [X] T042 [P] [US2] Add current balance HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/GetCurrentBalanceContractTest.java
+- [X] T043 [P] [US2] Add current balance integration test for zero and populated balances in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceSnapshotIntegrationTest.java
+- [X] T044 [P] [US2] Add snapshot derivation domain tests in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/BalanceSnapshotTest.java
 
 ### Implementation for User Story 2
 
-- [ ] T045 [P] [US2] Implement BalanceSnapshot model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceSnapshot.java
-- [ ] T046 [US2] Define get current balance use case in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/GetCurrentBalanceUseCase.java
-- [ ] T047 [US2] Implement current balance query service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/query/GetCurrentBalanceQueryService.java
-- [ ] T048 [US2] Implement balance snapshot repository adapter in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/JpaBalanceSnapshotRepositoryAdapter.java
-- [ ] T049 [US2] Implement current balance controller in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceQueryController.java
-- [ ] T050 [US2] Implement current balance DTOs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceQueryDtos.java
-- [ ] T051 [US2] Add balance read freshness metrics and structured logs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceObservability.java
+- [X] T045 [P] [US2] Implement BalanceSnapshot model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceSnapshot.java
+- [X] T046 [US2] Define get current balance use case in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/GetCurrentBalanceUseCase.java
+- [X] T047 [US2] Implement current balance query service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/query/GetCurrentBalanceQueryService.java
+- [X] T048 [US2] Implement balance snapshot repository adapter in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/JpaBalanceSnapshotRepositoryAdapter.java
+- [X] T049 [US2] Implement current balance controller in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceQueryController.java
+- [X] T050 [US2] Implement current balance DTOs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceQueryDtos.java
+- [X] T051 [US2] Add balance read freshness metrics and structured logs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceObservability.java
 
 **Checkpoint**: User Stories 1 and 2 provide protected reservation writes and reliable current balance reads.
 

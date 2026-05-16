@@ -49,7 +49,7 @@ CREATE INDEX idx_funds_reservations_expires_at
 CREATE TABLE balance_snapshots (
     snapshot_id UUID PRIMARY KEY,
     account_id VARCHAR(128) NOT NULL,
-    currency CHAR(3) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
     ledger_balance NUMERIC(19, 4) NOT NULL,
     locked_amount NUMERIC(19, 4) NOT NULL,
     pending_debit_amount NUMERIC(19, 4) NOT NULL,
@@ -59,6 +59,7 @@ CREATE TABLE balance_snapshots (
     as_of_sequence BIGINT NOT NULL CHECK (as_of_sequence >= 0),
     as_of_time TIMESTAMPTZ NOT NULL,
     consistency_mode VARCHAR(32) NOT NULL,
+    reconciliation_status VARCHAR(32) NOT NULL DEFAULT 'HEALTHY',
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
