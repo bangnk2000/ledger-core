@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 public abstract class BalanceApiContractSupport extends PostgresIntegrationTestSupport {
@@ -13,9 +12,6 @@ public abstract class BalanceApiContractSupport extends PostgresIntegrationTestS
 	protected static final String IDEMPOTENCY_KEY = "Idempotency-Key";
 	protected static final String REQUESTER_SCOPE = "X-Requester-Scope";
 	protected static final String CORRELATION_ID = "X-Correlation-Id";
-
-	@Autowired
-	protected MockMvc mockMvc;
 
 	@Autowired
 	private ObjectMapper objectMapper;

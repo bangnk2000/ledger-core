@@ -1,6 +1,6 @@
 CREATE TABLE balance_state (
     account_id VARCHAR(128) NOT NULL,
-    currency CHAR(3) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
     ledger_balance NUMERIC(19, 4) NOT NULL DEFAULT 0 CHECK (ledger_balance >= 0),
     locked_amount NUMERIC(19, 4) NOT NULL DEFAULT 0 CHECK (locked_amount >= 0),
     pending_debit_amount NUMERIC(19, 4) NOT NULL DEFAULT 0 CHECK (pending_debit_amount >= 0),
@@ -24,7 +24,7 @@ CREATE TABLE funds_reservations (
     requester_scope VARCHAR(128) NOT NULL,
     request_id VARCHAR(128) NOT NULL,
     account_id VARCHAR(128) NOT NULL,
-    currency CHAR(3) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
     direction VARCHAR(16) NOT NULL,
     amount NUMERIC(19, 4) NOT NULL CHECK (amount > 0),
     business_reference VARCHAR(128),

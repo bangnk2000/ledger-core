@@ -61,28 +61,28 @@
 
 ### Tests for User Story 1
 
-- [ ] T023 [P] [US1] Add domain tests for available-balance calculation and negative-balance prevention in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/BalanceStateTest.java
-- [ ] T024 [P] [US1] Add domain tests for active reservation creation and idempotent intent identity in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/FundsReservationTest.java
-- [ ] T025 [P] [US1] Add reserve funds HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReserveFundsContractTest.java
-- [ ] T026 [P] [US1] Add reservation integration test for successful reserve and insufficient funds in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReservationIntegrationTest.java
-- [ ] T027 [P] [US1] Add concurrent reservation integration test for overlapping debits in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReservationConcurrencyIntegrationTest.java
+- [X] T023 [P] [US1] Add domain tests for available-balance calculation and negative-balance prevention in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/BalanceStateTest.java
+- [X] T024 [P] [US1] Add domain tests for active reservation creation and idempotent intent identity in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/FundsReservationTest.java
+- [X] T025 [P] [US1] Add reserve funds HTTP contract test in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReserveFundsContractTest.java
+- [X] T026 [P] [US1] Add reservation integration test for successful reserve and insufficient funds in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReservationIntegrationTest.java
+- [X] T027 [P] [US1] Add concurrent reservation integration test for overlapping debits in src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/BalanceReservationConcurrencyIntegrationTest.java
 
 ### Implementation for User Story 1
 
-- [ ] T028 [P] [US1] Implement BalanceState aggregate in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceState.java
-- [ ] T029 [P] [US1] Implement FundsReservation aggregate in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/FundsReservation.java
-- [ ] T030 [P] [US1] Implement BalanceMutationRequest command model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/command/BalanceMutationRequest.java
-- [ ] T031 [US1] Define reserve funds use case in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/ReserveFundsUseCase.java
-- [ ] T032 [US1] Implement reserve funds application service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/ReserveFundsService.java
-- [ ] T033 [US1] Implement JPA balance state entity and mapper in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/BalanceStateJpaEntity.java
-- [ ] T034 [US1] Implement JPA reservation entity and mapper in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/FundsReservationJpaEntity.java
-- [ ] T035 [US1] Implement balance state repository adapter with deterministic locking in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/JpaBalanceStateRepositoryAdapter.java
-- [ ] T036 [US1] Implement reservation repository adapter in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/JpaFundsReservationRepositoryAdapter.java
-- [ ] T037 [US1] Implement idempotency repository adapter in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/JpaBalanceIdempotencyRepositoryAdapter.java
-- [ ] T038 [US1] Implement Spring transaction adapter for protected writes in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/SpringBalanceTransactionAdapter.java
-- [ ] T039 [US1] Implement reserve funds controller in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReservationController.java
-- [ ] T040 [US1] Implement reserve request and outcome DTOs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReservationDtos.java
-- [ ] T041 [US1] Add reserve operation metrics and structured logs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceObservability.java
+- [X] T028 [P] [US1] Implement BalanceState aggregate in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/BalanceState.java
+- [X] T029 [P] [US1] Implement FundsReservation aggregate in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/model/FundsReservation.java
+- [X] T030 [P] [US1] Implement BalanceMutationRequest command model in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/command/BalanceMutationRequest.java
+- [X] T031 [US1] Define reserve funds use case in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/port/in/ReserveFundsUseCase.java
+- [X] T032 [US1] Implement reserve funds application service in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/ReserveFundsService.java
+- [X] T033 [US1] Implement JPA balance state entity and mapper in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/BalanceStateJpaEntity.java
+- [X] T034 [US1] Implement JPA reservation entity and mapper in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/FundsReservationJpaEntity.java
+- [X] T035 [US1] Implement balance state repository adapter with deterministic locking in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/JpaBalanceStateRepositoryAdapter.java
+- [X] T036 [US1] Implement reservation repository adapter in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/JpaFundsReservationRepositoryAdapter.java
+- [X] T037 [US1] Implement idempotency repository adapter in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/JpaBalanceIdempotencyRepositoryAdapter.java
+- [X] T038 [US1] Implement Spring transaction adapter for protected writes in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/out/persistence/SpringBalanceTransactionAdapter.java
+- [X] T039 [US1] Implement reserve funds controller in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReservationController.java
+- [X] T040 [US1] Implement reserve request and outcome DTOs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ReservationDtos.java
+- [X] T041 [US1] Add reserve operation metrics and structured logs in src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/application/BalanceObservability.java
 
 **Checkpoint**: User Story 1 is independently functional and testable as the MVP.
 
