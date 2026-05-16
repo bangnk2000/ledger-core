@@ -204,16 +204,16 @@
 
 **Purpose**: Finish verification, rollout documentation, compatibility checks, and operational hardening across all stories.
 
-- [ ] T090 [P] Document explicit transaction boundaries and rollback behavior in docs/account-balance-management-transaction-boundaries.md
-- [ ] T091 [P] Document additive API compatibility and replay export compatibility in docs/account-balance-management-compatibility.md
-- [ ] T092 [P] Document zero-downtime migration and roll-forward recovery steps in docs/account-balance-management-rollout.md
-- [ ] T093 [P] Review ADR assumptions and add account balance management ADR notes in docs/ADR/ADR-009-account-balance-management.md
-- [ ] T094 Verify all balance API contract tests under src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ with GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test --tests com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.in.web.*ContractTest
-- [ ] T095 Verify all balance domain tests under src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/ with GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test --tests com.bangnk.ledgercore.ledger_core.ledger.balance.domain.*
-- [ ] T096 Verify all PostgreSQL-backed balance integration tests under src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/ with GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test --tests com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.*
-- [ ] T097 Run full regression suite covering src/test/java/com/bangnk/ledgercore/ledger_core/ with GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test
-- [ ] T098 Validate quickstart smoke commands in specs/002-account-balance-management/quickstart.md
-- [ ] T099 Review generated implementation against .specify/memory/constitution.md and docs/ADR/ for immutable ledger, double-entry, transaction, and modular-monolith compliance
+- [X] T090 [P] Document explicit transaction boundaries and rollback behavior in docs/account-balance-management-transaction-boundaries.md
+- [X] T091 [P] Document additive API compatibility and replay export compatibility in docs/account-balance-management-compatibility.md
+- [X] T092 [P] Document zero-downtime migration and roll-forward recovery steps in docs/account-balance-management-rollout.md
+- [X] T093 [P] Review ADR assumptions and add account balance management ADR notes in docs/ADR/ADR-009-account-balance-management.md
+- [X] T094 Verify all balance API contract tests under src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/ with GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test --tests com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.in.web.*ContractTest
+- [X] T095 Verify all balance domain tests under src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/domain/ with GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test --tests com.bangnk.ledgercore.ledger_core.ledger.balance.domain.*
+- [X] T096 Verify all PostgreSQL-backed balance integration tests under src/test/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/ with GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test --tests com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.*
+- [X] T097 Run full regression suite covering src/test/java/com/bangnk/ledgercore/ledger_core/ with GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test
+- [X] T098 Validate quickstart smoke commands in specs/002-account-balance-management/quickstart.md
+- [X] T099 Review generated implementation against .specify/memory/constitution.md and docs/ADR/ for immutable ledger, double-entry, transaction, and modular-monolith compliance
 
 ---
 
