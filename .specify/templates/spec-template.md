@@ -106,6 +106,8 @@
 - **EQR-007**: Performance and scalability expectations MUST be measurable or marked NEEDS CLARIFICATION.
 - **EQR-008**: Ledger mutations MUST define double-entry validation, immutable-entry behavior, traceability, audit logging, and reconciliation expectations.
 - **EQR-009**: Mutating external requests MUST define idempotency keys, duplicate handling, and stable retry outcomes.
+- **EQR-010**: Mutating workflows MUST define explicit transaction boundaries, consistency model, rollback behavior, and concurrency considerations.
+- **EQR-011**: Major architectural deviations and new dependencies MUST identify whether ADR or equivalent justification is required.
 
 ### Key Entities *(include if feature involves data)*
 

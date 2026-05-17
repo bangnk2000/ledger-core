@@ -1,14 +1,14 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-specs/001-core-ledger-foundation/plan.md
+specs/002-account-balance-management/plan.md
 <!-- SPECKIT END -->
 
 # ledger-core
 
 Follow:
-- constitution.md
-- ADRs
+- .specify/memory/constitution.md
+- docs/ADR/
 
 Core Rules:
 - Ledger entries are immutable

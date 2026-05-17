@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:54328/ledger-core
+    username: ${LEDGER_DB_USERNAME:user}
+    password: ${LEDGER_DB_PASSWORD:secret}
+
+    hikari:
+      pool-name: LedgerPool
+
+      # max active connections
+      maximum-pool-size: 20
+
+      # minimum idle connections
+      minimum-idle: 5
+
+      # max wait before timeout
+      connection-timeout: 30000
+
+      # idle connection recycle
+      idle-timeout: 600000
+
+      # max connection lifetime
+      max-lifetime: 1800000
+
+      # validation
+      validation-timeout: 5000
+
+      # detect leaked connections
+      leak-detection-threshold: 60000
+
+      auto-commit: false
+
+  jpa:
+    open-in-view: false
+
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+
+        order_inserts: true
+        order_updates: true
