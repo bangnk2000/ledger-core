@@ -2,6 +2,9 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.0.6'
 	id 'io.spring.dependency-management' version '1.1.7'
+
+	id 'jacoco'
+	id 'org.sonarqube' version '5.1.0.4882'
 }
 
 group = 'com.bangnk.ledgercore'
@@ -44,4 +47,30 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+
+	finalizedBy jacocoTestReport
+}
+
+jacoco {
+	toolVersion = "0.8.13"
+}
+
+jacocoTestReport {
+	dependsOn test
+
+	reports {
+		xml.required = true
+		html.required = true
+	}
+}
+
+sonar {
+	properties {
+		property "sonar.projectKey", "bangnk2000_ledger-core"
+		property "sonar.organization", "bangnk2000"
+		property "sonar.host.url", "https://sonarcloud.io"
+
+		property "sonar.coverage.jacoco.xmlReportPaths",
+				"${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
+	}
 }
