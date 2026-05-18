@@ -35,6 +35,8 @@ planning, and review work for ledger-core.
 - Metrics and tracing must be supported.
 - Avoid hidden magic and implicit framework behavior.
 - Prefer explicit code and readability.
+- Any task-list execution must follow the workflow order: worktree, TDD
+  (red-green-refactor), subagent-driven execution, code review, finish-branch.
 
 ## Implementation Analysis
 
@@ -54,6 +56,13 @@ Before generating code, explain:
 - Risks.
 - Consistency model.
 - Transaction boundaries.
+
+Before implementing a task list, establish:
+
+1. Isolated worktree or equivalent isolated workspace.
+2. Test-first plan for red-green-refactor.
+3. Safe task decomposition for parallel workers or agents when applicable.
+4. Review checkpoint and finish-branch decision path.
 
 ## Prohibited Patterns
 

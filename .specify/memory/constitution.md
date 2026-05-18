@@ -1,20 +1,24 @@
 <!--
 Sync Impact Report
-Version change: 1.1.0 -> 1.1.1
+Version change: 1.1.1 -> 1.2.0
 Modified principles:
 - Governance -> Governance
 Added sections:
-- None
+- Implementation Workflow Requirements
 Removed sections:
 - None
 Templates requiring updates:
-- ✅ .specify/templates/plan-template.md reviewed; no changes required
-- ✅ .specify/templates/spec-template.md updated
+- ✅ .specify/templates/plan-template.md updated
+- ✅ .specify/templates/spec-template.md reviewed; no changes required
 - ✅ .specify/templates/tasks-template.md updated
 - ✅ .specify/templates/commands/*.md not present in this repository
 - ✅ README.md reviewed; empty file, no principle references required updates
-- ✅ AGENTS.md updated to reference the active constitution and ADR path
-- ✅ docs/ai/*.md reviewed; no changes required
+- ✅ AGENTS.md updated
+- ✅ docs/ai/engineering-rules.md updated
+- ✅ docs/ai/review-checklist.md updated
+- ✅ docs/ai/api-guidelines.md reviewed; no changes required
+- ✅ docs/ai/migration-rules.md reviewed; no changes required
+- ✅ docs/ai/messaging-guidelines.md reviewed; no changes required
 Follow-up TODOs:
 - None
 -->
@@ -152,6 +156,29 @@ experience, data correctness, and incident response.
 - Any external integration MUST document retry policy, timeout values,
   idempotency behavior, failure modes, and observable signals.
 
+## Implementation Workflow Requirements
+
+- Any implementation of a task list MUST follow the mandatory Superpowers
+  workflow in this order: worktree, TDD, subagent-driven execution, code
+  review, finish-branch.
+- Worktree: implementation MUST start in an isolated worktree or equivalent
+  isolated workspace so feature changes do not contaminate the primary working
+  tree.
+- TDD: critical behavior, regression, contract, or bug-reproduction tests MUST
+  be written first, observed failing, and then driven through red-green-
+  refactor. If automated test-first work is impossible, the reason and
+  alternative verification method MUST be documented before implementation.
+- Subagent-driven execution: when a task list contains separable work, execution
+  MUST assign clear ownership across parallel workers or agents and then review
+  the integrated result. Sequential solo execution is acceptable only when the
+  work cannot be meaningfully decomposed.
+- Code review: every completed task-list implementation MUST receive review for
+  correctness, regressions, compatibility, migration safety, and test coverage
+  before merge or release.
+- Finish-branch: completion MUST include explicit verification status and an
+  intentional branch outcome such as merge, pull request, or cleanup. Task-list
+  work MUST NOT be abandoned in an ambiguous partially verified state.
+
 ## Governance
 
 This constitution supersedes conflicting local conventions, feature plans, and
@@ -166,14 +193,16 @@ Versioning follows semantic versioning:
   governance.
 - PATCH for clarifications, wording changes, and non-semantic corrections.
 
-Compliance review is mandatory during planning, design review, pull request
-review, release readiness, and constitution amendments that change delivery
-rules or engineering constraints. Any architecture violation requires ADR
-documentation. Any new dependency requires justification. Any schema change
-requires a rollback or roll-forward strategy. Any distributed transaction
-requires documented consistency guarantees. Any external integration requires a
-retry, timeout, idempotency, and failure handling strategy. Any constitution
-amendment that changes contributor expectations MUST update the affected
-templates and runtime guidance in the same change.
+Compliance review is mandatory during planning, design review, task-list
+execution, pull request review, release readiness, and constitution amendments
+that change delivery rules or engineering constraints. Any architecture
+violation requires ADR documentation. Any new dependency requires
+justification. Any schema change requires a rollback or roll-forward strategy.
+Any distributed transaction requires documented consistency guarantees. Any
+external integration requires a retry, timeout, idempotency, and failure
+handling strategy. Any implementation of a task list MUST show evidence of the
+required workflow order or document why decomposition was not possible. Any
+constitution amendment that changes contributor expectations MUST update the
+affected templates and runtime guidance in the same change.
 
-**Version**: 1.1.1 | **Ratified**: 2026-05-11 | **Last Amended**: 2026-05-14
+**Version**: 1.2.0 | **Ratified**: 2026-05-11 | **Last Amended**: 2026-05-18

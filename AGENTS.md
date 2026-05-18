@@ -17,6 +17,7 @@ Core Rules:
 - Zero downtime migration required
 - Prefer simplicity over abstraction
 - Explicit transaction boundaries only
+- Any task-list implementation follows: worktree -> TDD (red-green-refactor) -> subagent-driven execution -> code review -> finish-branch
 
 Architecture:
 - Hexagonal Architecture

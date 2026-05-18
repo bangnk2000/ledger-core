@@ -12,6 +12,7 @@ architecture reviews.
 - detect unnecessary abstraction
 - detect unjustified CQRS, event sourcing, or async processing
 - detect missing ADRs for important decisions or principle deviations
+- detect task-list execution that skipped required workflow stages
 
 ## Domain and Ledger Correctness
 
@@ -63,3 +64,4 @@ architecture reviews.
 - detect missing authentication, authorization, input validation, or secrets
   handling analysis
 - detect fake or placeholder implementations presented as production-ready
+- detect missing code review evidence or missing finish-branch decision

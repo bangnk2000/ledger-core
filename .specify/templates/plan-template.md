@@ -57,6 +57,10 @@
   concurrency, locking, scaling bottlenecks, and rollback strategy identified?
 - **Operations**: Does the design preserve Terraform/Docker reproducibility,
   Kubernetes rolling updates, and graceful shutdown?
+- **Implementation workflow readiness**: If this plan will lead to task-list
+  execution, can the work proceed in the required order of isolated worktree,
+  TDD red-green-refactor, subagent-driven execution, code review, and
+  finish-branch?
 - **ADRs and dependencies**: Are major architectural decisions, architecture
   violations, and new dependency justifications documented?
 

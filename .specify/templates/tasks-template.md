@@ -13,6 +13,12 @@ Contract, unit, and additional integration tests MUST be included when needed
 to validate compatibility, domain rules, adapters, or regressions identified in
 the feature specification and implementation plan.
 
+**Execution Workflow**: Every generated task list MUST be executed using the
+mandatory workflow order from the constitution: worktree -> TDD
+(red-green-refactor) -> subagent-driven execution -> code review ->
+finish-branch. Tasks MUST make that flow explicit rather than treating it as an
+implicit convention.
+
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description`
@@ -47,13 +53,24 @@ the feature specification and implementation plan.
   ============================================================================
 -->
 
+## Phase 0: Worktree and TDD Harness
+
+**Purpose**: Establish isolated execution and test-first discipline before any
+implementation work starts
+
+- [ ] T000 Create an isolated worktree or equivalent isolated workspace for the feature
+- [ ] T001 Capture the verification commands needed for red-green-refactor and final validation
+- [ ] T002 Plan task decomposition and ownership for subagent-driven or parallel execution where the work can be split safely
+
+---
+
 ## Phase 1: Setup (Shared Infrastructure)
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize [language] project with [framework] dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+- [ ] T003 Create project structure per implementation plan
+- [ ] T004 Initialize [language] project with [framework] dependencies
+- [ ] T005 [P] Configure linting and formatting tools
 
 ---
 
@@ -65,14 +82,14 @@ the feature specification and implementation plan.
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create hexagonal package/module boundaries for domain, application ports, adapters, and configuration
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
-- [ ] T010 [P] Configure metrics and tracing infrastructure
-- [ ] T011 [P] Configure graceful shutdown readiness for Kubernetes rolling updates
+- [ ] T006 Setup database schema and migrations framework
+- [ ] T007 [P] Implement authentication/authorization framework
+- [ ] T008 [P] Setup API routing and middleware structure
+- [ ] T009 Create hexagonal package/module boundaries for domain, application ports, adapters, and configuration
+- [ ] T010 Configure error handling and logging infrastructure
+- [ ] T011 Setup environment configuration management
+- [ ] T012 [P] Configure metrics and tracing infrastructure
+- [ ] T013 [P] Configure graceful shutdown readiness for Kubernetes rolling updates
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -89,20 +106,20 @@ Examples of foundational tasks (adjust based on your project):
 > **NOTE: Write tests FIRST for critical business flows and compatibility
 > contracts; ensure they FAIL before implementation.**
 
-- [ ] T012 [P] [US1] Contract test for [endpoint/API behavior] in src/test/java/[package]/contract/[Name]ContractTest.java
-- [ ] T013 [P] [US1] Integration test for [critical business flow] in src/test/java/[package]/integration/[Name]IntegrationTest.java
+- [ ] T014 [P] [US1] Contract test for [endpoint/API behavior] in src/test/java/[package]/contract/[Name]ContractTest.java
+- [ ] T015 [P] [US1] Integration test for [critical business flow] in src/test/java/[package]/integration/[Name]IntegrationTest.java
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Create [Entity1] domain model in src/main/java/[package]/domain/[Entity1].java
-- [ ] T015 [P] [US1] Create [Entity2] domain model in src/main/java/[package]/domain/[Entity2].java
-- [ ] T016 [US1] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
-- [ ] T017 [US1] Implement inbound adapter in src/main/java/[package]/adapter/in/[Adapter].java
-- [ ] T018 [US1] Implement outbound adapter in src/main/java/[package]/adapter/out/[Adapter].java
-- [ ] T019 [US1] Add double-entry validation, immutable ledger-entry behavior, and audit traceability
-- [ ] T020 [US1] Add idempotency handling, validation, error handling, and security checks
-- [ ] T020A [US1] Document explicit transaction boundaries, rollback behavior, and concurrency assumptions for the user story
-- [ ] T021 [US1] Add structured logging, metrics, and traces for user story 1 operations
+- [ ] T016 [P] [US1] Create [Entity1] domain model in src/main/java/[package]/domain/[Entity1].java
+- [ ] T017 [P] [US1] Create [Entity2] domain model in src/main/java/[package]/domain/[Entity2].java
+- [ ] T018 [US1] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
+- [ ] T019 [US1] Implement inbound adapter in src/main/java/[package]/adapter/in/[Adapter].java
+- [ ] T020 [US1] Implement outbound adapter in src/main/java/[package]/adapter/out/[Adapter].java
+- [ ] T021 [US1] Add double-entry validation, immutable ledger-entry behavior, and audit traceability
+- [ ] T022 [US1] Add idempotency handling, validation, error handling, and security checks
+- [ ] T023 [US1] Document explicit transaction boundaries, rollback behavior, and concurrency assumptions for the user story
+- [ ] T024 [US1] Add structured logging, metrics, and traces for user story 1 operations
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -116,16 +133,16 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T022 [P] [US2] Contract test for [endpoint/API behavior] in src/test/java/[package]/contract/[Name]ContractTest.java
-- [ ] T023 [P] [US2] Integration test for [critical business flow] in src/test/java/[package]/integration/[Name]IntegrationTest.java
+- [ ] T025 [P] [US2] Contract test for [endpoint/API behavior] in src/test/java/[package]/contract/[Name]ContractTest.java
+- [ ] T026 [P] [US2] Integration test for [critical business flow] in src/test/java/[package]/integration/[Name]IntegrationTest.java
 
 ### Implementation for User Story 2
 
-- [ ] T024 [P] [US2] Create [Entity] domain model in src/main/java/[package]/domain/[Entity].java
-- [ ] T025 [US2] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
-- [ ] T026 [US2] Implement adapters in src/main/java/[package]/adapter/[in|out]/[Adapter].java
-- [ ] T027 [US2] Add observability, validation, and security checks
-- [ ] T028 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T027 [P] [US2] Create [Entity] domain model in src/main/java/[package]/domain/[Entity].java
+- [ ] T028 [US2] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
+- [ ] T029 [US2] Implement adapters in src/main/java/[package]/adapter/[in|out]/[Adapter].java
+- [ ] T030 [US2] Add observability, validation, and security checks
+- [ ] T031 [US2] Integrate with User Story 1 components (if needed)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -139,15 +156,15 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T029 [P] [US3] Contract test for [endpoint/API behavior] in src/test/java/[package]/contract/[Name]ContractTest.java
-- [ ] T030 [P] [US3] Integration test for [critical business flow] in src/test/java/[package]/integration/[Name]IntegrationTest.java
+- [ ] T032 [P] [US3] Contract test for [endpoint/API behavior] in src/test/java/[package]/contract/[Name]ContractTest.java
+- [ ] T033 [P] [US3] Integration test for [critical business flow] in src/test/java/[package]/integration/[Name]IntegrationTest.java
 
 ### Implementation for User Story 3
 
-- [ ] T031 [P] [US3] Create [Entity] domain model in src/main/java/[package]/domain/[Entity].java
-- [ ] T032 [US3] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
-- [ ] T033 [US3] Implement adapters in src/main/java/[package]/adapter/[in|out]/[Adapter].java
-- [ ] T034 [US3] Add observability, validation, and security checks
+- [ ] T034 [P] [US3] Create [Entity] domain model in src/main/java/[package]/domain/[Entity].java
+- [ ] T035 [US3] Implement application use case and ports in src/main/java/[package]/application/[UseCase].java
+- [ ] T036 [US3] Implement adapters in src/main/java/[package]/adapter/[in|out]/[Adapter].java
+- [ ] T037 [US3] Add observability, validation, and security checks
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -173,6 +190,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX Verify API idempotency, backward compatibility, and error contract analysis
 - [ ] TXXX Verify event delivery guarantees, retry, deduplication, and ordering requirements
 - [ ] TXXX Update or create ADRs for major architectural decisions, architecture violations, or new dependencies
+- [ ] TXXX Run code review and resolve or record all findings
+- [ ] TXXX Record the finish-branch decision with final verification status, merge or PR plan, and cleanup actions
 - [ ] TXXX Run quickstart.md validation
 
 ---
@@ -244,7 +263,8 @@ Task: "Create [Entity2] model in src/models/[entity2].py"
 2. Add User Story 1 → Test independently → Deploy/Demo (MVP!)
 3. Add User Story 2 → Test independently → Deploy/Demo
 4. Add User Story 3 → Test independently → Deploy/Demo
-5. Each story adds value without breaking previous stories
+5. Run code review and finish-branch checks before merge or release
+6. Each story adds value without breaking previous stories
 
 ### Parallel Team Strategy
 
