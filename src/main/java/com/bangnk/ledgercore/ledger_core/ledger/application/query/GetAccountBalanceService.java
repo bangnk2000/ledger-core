@@ -41,14 +41,14 @@ public class GetAccountBalanceService implements GetAccountBalanceQuery {
 		Timer.Sample sample = Timer.start();
 		try {
 			BalanceSnapshot snapshot = entryRepository.summarizePostedBalance(accountId, currency);
-			BigDecimal debitTotal = snapshot == null || snapshot.debitTotal() == null ? BigDecimal.ZERO.setScale(4) : snapshot.debitTotal();
-			BigDecimal creditTotal = snapshot == null || snapshot.creditTotal() == null ? BigDecimal.ZERO.setScale(4) : snapshot.creditTotal();
+			BigDecimal debitTotal = totalOrZero(snapshot, true);
+			BigDecimal creditTotal = totalOrZero(snapshot, false);
 			AccountBalance balance = new AccountBalance(
 				accountId.value(),
 				debitTotal.subtract(creditTotal),
 				currency,
 				Instant.now(clock),
-				snapshot == null ? 0L : snapshot.entryCount());
+				entryCount(snapshot));
 			successCounter.increment();
 			auditEventPublisher.publish(new AuditTrace.AuditEvent(
 				"BALANCE_CALCULATED",
@@ -63,5 +63,16 @@ public class GetAccountBalanceService implements GetAccountBalanceQuery {
 		} finally {
 			sample.stop(balanceTimer);
 		}
+	}
+
+	private static BigDecimal totalOrZero(BalanceSnapshot snapshot, boolean debit) {
+		BigDecimal total = snapshot == null
+			? null
+			: (debit ? snapshot.debitTotal() : snapshot.creditTotal());
+		return total == null ? BigDecimal.ZERO.setScale(4) : total;
+	}
+
+	private static long entryCount(BalanceSnapshot snapshot) {
+		return snapshot == null ? 0L : snapshot.entryCount();
 	}
 }

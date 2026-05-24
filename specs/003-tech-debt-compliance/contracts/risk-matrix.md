@@ -26,3 +26,17 @@ triggers.
 - Transaction-boundary, concurrency, and replay/determinism refactors are never
   mixed in the same wave.
 
+## Mandatory Validation Matrix
+
+| Module criticality | Change type | Required validations | Merge policy |
+|--------------------|-------------|----------------------|--------------|
+| replay-sensitive | any | `BalanceReplayDeterminismIntegrationTest` + targeted changed-module tests | Block merge if any fail |
+| transaction-critical | non-transaction-boundary | targeted changed-module tests | Block merge if any fail |
+| transaction-critical | transaction-boundary | targeted commit/rollback integration tests + `BalanceReplayDeterminismIntegrationTest` + `BalanceReservationConcurrencyIntegrationTest` | Block merge if any fail |
+| transaction-critical | concurrency touch | `BalanceReservationConcurrencyIntegrationTest` + targeted changed-module tests | Block merge if any fail |
+| normal | any | targeted changed-module tests | Block merge if any fail |
+
+Validation evidence for each wave must be recorded in
+`contracts/refactor-backlog.md` with command, date, execution environment, and
+result.
+

@@ -57,3 +57,21 @@ For `normal` modules:
 
 - Must run unit tests plus any directly affected integration tests.
 
+## T009 Triage Delta Log (2026-05-19)
+
+- `wave_id`: `NA`
+- `backlog_item_id`: `NA`
+- `status`: `DONE_WITH_CONCERNS`
+- `scope`: Triage executed from available Sonar snapshot only; Qodana remains blocked pending real SARIF artifact.
+- `evidence`:
+  - Sonar critical findings identified 1 affected path with 2 critical issues:
+    `src/main/java/com/bangnk/ledgercore/ledger_core/ledger/balance/adapter/in/web/BalanceApiExceptionHandler.java`.
+  - Qodana placeholder baseline still empty (`qodana_runs=0`).
+- `decision`:
+  - No new transaction boundary discovered from Sonar critical findings.
+  - No new replay-sensitive path discovered from Sonar critical findings.
+  - The discovered path remains classified as `normal` adapter-in/web concern
+    (response payload literal duplication), not transaction-critical and not replay-sensitive.
+- `rollback_notes`: `not_applicable` (classification doc only; no code/config mutation).
+- `pending_verification`: Re-run classification delta after T007 provides real Qodana SARIF artifact.
+

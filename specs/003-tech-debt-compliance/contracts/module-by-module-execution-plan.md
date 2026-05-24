@@ -3,9 +3,19 @@
 **Feature**: `003-tech-debt-compliance`  
 **Date**: 2026-05-19  
 
-This plan applies the “small waves” rule: one module group + one refactor
+This plan applies the "small waves" rule: one module group + one refactor
 category per wave, with strict separation of transaction-boundary, concurrency,
 and replay-related refactors.
+
+## Execution Location and Branch Strategy
+
+- **Primary worktree**: `/home/bangnk/projects/ledger-core/.worktrees/003-tech-debt-compliance-impl`
+- **Implementation branch**: `003-tech-debt-compliance-impl`
+- **Wave branch policy**:
+  - Keep `003-tech-debt-compliance-impl` as the integration branch for this feature line.
+  - Execute one wave at a time with isolated commits and explicit evidence links.
+  - If an emergency rollback is needed, revert only the wave commit(s) without mixing unrelated files.
+  - Never mix `transaction_boundary` changes with `concurrency` or `replay` touches in the same wave.
 
 ## Modules In Scope (priority ordered)
 
@@ -105,4 +115,3 @@ Each wave includes:
 - Prefer rollback by reverting the wave commit(s).
 - If a wave includes a schema change, it must be expand-compatible and have a
   roll-forward plan; avoid destructive migrations.
-

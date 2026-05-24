@@ -1,10 +1,29 @@
 # Quickstart: Working With Sonar + Qodana During Refactors
 
 **Feature**: `003-tech-debt-compliance`  
-**Date**: 2026-05-19  
+**Date**: 2026-05-24  
 
 This quickstart is optimized for incremental waves and correctness protection
 in transaction-critical and replay-sensitive modules.
+
+## Final Verification Commands (T056)
+
+These commands are the final verification set for this feature in this
+execution branch.
+
+```bash
+GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build
+GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test --tests com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.BalanceReplayDeterminismIntegrationTest
+GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test --tests com.bangnk.ledgercore.ledger_core.ledger.balance.adapter.BalanceReservationConcurrencyIntegrationTest
+GRADLE_USER_HOME=/tmp/gradle-home ./gradlew sonar -Dsonar.token=<SONAR_TOKEN> -Dsonar.host.url=<SONAR_HOST_URL> -Dsonar.qualitygate.wait=true
+qodana scan --baseline tools/qodana/qodana.sarif.json
+```
+
+Notes:
+- Run focused tests with `--tests` for the touched module before full build.
+- For local Sonar report snapshot ingestion, use `tools/sonar/fetch-sonar-report.sh`.
+- Set Sonar auth context via properties and secrets/environment values aligned to policy.
+- Sonar/Qodana targeted runs require environment/tooling availability.
 
 ## Local Workflow
 
@@ -51,6 +70,21 @@ or replay-sensitive (see `contracts/module-classification.md`):
 3. Run concurrency validation if the wave touches protected writes, locking, or
    retry behavior.
 
+## Replay Fixture Format (Golden Dataset)
+
+Determinism characterization tests use:
+
+- `src/test/resources/ledger/replay/golden-replay-v1.csv`
+
+CSV contract:
+
+- Header is mandatory.
+- Column order is fixed:
+  `ledger_sequence,ledger_transaction_id,ledger_entry_id,account_id,currency,direction,amount,posted_at`
+- `direction` must be `DEBIT` or `CREDIT`.
+- `amount` is decimal with scale `4`.
+- `posted_at` must be ISO-8601 UTC instant (example: `2026-05-19T10:00:00Z`).
+
 ## Wave Rules
 
 - One wave = one module group + one category.
@@ -59,4 +93,3 @@ or replay-sensitive (see `contracts/module-classification.md`):
 - If a time-bound exception is approved for a new critical finding, the wave
   still requires mandatory replay/concurrency validation in transaction-critical
   modules.
-

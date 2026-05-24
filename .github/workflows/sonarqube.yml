@@ -34,7 +34,11 @@ jobs:
         run: ./gradlew build
 
       - name: SonarQube Analysis
-        run: ./gradlew build
+        run: >
+          ./gradlew sonar
+          -Dsonar.token="${SONAR_TOKEN}"
+          -Dsonar.host.url="${SONAR_HOST_URL}"
+          -Dsonar.qualitygate.wait=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

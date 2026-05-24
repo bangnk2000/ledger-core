@@ -1,0 +1,33 @@
+name: CI Sanity
+
+on:
+  pull_request:
+
+jobs:
+  workflow-yaml-sanity:
+    name: Workflow YAML Sanity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate workflow static conventions
+        run: |
+          set -euo pipefail
+          test -f .github/workflows/sonarqube.yml
+          test -f .github/workflows/qodana_code_quality.yml
+
+          # Sonar workflow must explicitly run sonar task with quality gate wait.
+          grep -q "./gradlew sonar" .github/workflows/sonarqube.yml
+          grep -q "sonar.qualitygate.wait=true" .github/workflows/sonarqube.yml
+
+          # Qodana workflow must be event-safe and baseline-aware.
+          grep -q "github.event_name == 'pull_request'" .github/workflows/qodana_code_quality.yml
+          grep -q "github.sha" .github/workflows/qodana_code_quality.yml
+          grep -q -- "--baseline tools/qodana/qodana.sarif.json" .github/workflows/qodana_code_quality.yml
+
+          for file in .github/workflows/*.yml; do
+            grep -q "^name:" "$file"
+            grep -q "^on:" "$file"
+            echo "sanity-checked: $file"
+          done
