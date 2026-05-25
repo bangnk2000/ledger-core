@@ -3,4 +3,5 @@ spring:
     name: ledger-core
 
 server:
+  port: 8888
   shutdown: graceful
