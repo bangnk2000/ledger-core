@@ -8,11 +8,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class BalanceReplayOrderingService {
 
+	private static final Comparator<ReplayRecord> DETERMINISTIC_REPLAY_ORDER =
+		Comparator.comparingLong(ReplayRecord::ledgerSequence)
+			.thenComparing(ReplayRecord::ledgerTransactionId, Comparator.naturalOrder())
+			.thenComparing(ReplayRecord::ledgerEntryId, Comparator.naturalOrder());
+
 	public List<ReplayRecord> orderDeterministically(List<ReplayRecord> records) {
 		return records.stream()
-			.sorted(Comparator.comparingLong(ReplayRecord::ledgerSequence)
-				.thenComparing(ReplayRecord::ledgerTransactionId)
-				.thenComparing(ReplayRecord::ledgerEntryId))
+			.sorted(DETERMINISTIC_REPLAY_ORDER)
 			.toList();
 	}
 }

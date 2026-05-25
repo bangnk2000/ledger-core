@@ -22,18 +22,57 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+      - name: Validate exception expiry records (UTC)
+        run: |
+          set -euo pipefail
+          policy_file="specs/003-tech-debt-compliance/contracts/quality-gate-policy.md"
+          if ! grep -q "^## Exception Records" "$policy_file"; then
+            echo "Missing Exception Records section in $policy_file"
+            exit 1
+          fi
+          python3 - <<'PY'
+          import datetime
+          import pathlib
+          import re
+          import sys
+
+          policy = pathlib.Path("specs/003-tech-debt-compliance/contracts/quality-gate-policy.md")
+          text = policy.read_text(encoding="utf-8")
+          today = datetime.datetime.now(datetime.timezone.utc).date()
+
+          date_pattern = re.compile(r"^\s*-\s*`expires_on`:\s*(\d{4}-\d{2}-\d{2})\s*$")
+          seen = 0
+          expired = []
+          for i, line in enumerate(text.splitlines(), start=1):
+            m = date_pattern.match(line)
+            if not m:
+              continue
+            seen += 1
+            expires = datetime.date.fromisoformat(m.group(1))
+            if expires < today:
+              expired.append((i, m.group(1)))
+
+          if expired:
+            print(f"Found expired exception record(s) in {policy} (UTC today: {today.isoformat()}):", file=sys.stderr)
+            for line_no, date in expired:
+              print(f"  line {line_no}: expires_on={date}", file=sys.stderr)
+            sys.exit(1)
+
+          print(f"Exception record expiry validation passed (UTC today: {today.isoformat()}, dated records checked: {seen}).")
+          PY
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2026.1
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         with:
           # When pr-mode is set to true, Qodana analyzes only the files that have been changed
-          pr-mode: false
+          pr-mode: ${{ github.event_name == 'pull_request' }}
           use-caches: true
           post-pr-comment: true
           use-annotations: true
+          args: --baseline tools/qodana/qodana.sarif.json
           # Upload Qodana results (SARIF, other artifacts, logs) as an artifact to the job
           upload-result: false
           # quick-fixes available in Ultimate and Ultimate Plus plans

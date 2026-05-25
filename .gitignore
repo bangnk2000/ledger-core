@@ -45,3 +45,5 @@ out/
 Thumbs.db
 *.tmp
 *.swp
+
+.worktrees/

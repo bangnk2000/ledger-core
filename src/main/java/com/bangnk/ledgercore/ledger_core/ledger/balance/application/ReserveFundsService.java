@@ -62,20 +62,10 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 
 	private ReserveFundsResult reserveInTransaction(BalanceMutationRequest request) {
 		Instant now = Instant.now(clock);
-		RequestHash requestHash = new RequestHash(request.requestIdentity().requestId() + "|" + request.amount().value().toPlainString());
-		Optional<IdempotencyDecision> decision = idempotencyService.evaluate(
-			request.requestIdentity(),
-			requestHash,
-			BalanceMutationType.RESERVE,
-			"BALANCE_RESERVATION_DUPLICATE",
-			"Duplicate reservation request",
-			"Request identity already used for a different reservation intent",
-			now);
-		if (decision.isPresent()) {
-			IdempotencyDecision evaluated = decision.orElseThrow();
-			observability.recordReserveOutcome(evaluated.outcome().outcome());
-			observability.recordDuplicate();
-			return new ReserveFundsResult(evaluated.outcome(), payloadReservationId(evaluated.responsePayload()));
+		RequestHash requestHash = requestHash(request);
+		Optional<ReserveFundsResult> idempotentResult = resolveIdempotentResult(request, requestHash, now);
+		if (idempotentResult.isPresent()) {
+			return idempotentResult.orElseThrow();
 		}
 
 		var key = new BalanceStateRepositoryPort.BalanceStateKey(request.accountIds().getFirst(), request.currency());
@@ -86,18 +76,7 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 		try {
 			nextState = state.reserve(request.direction(), request.amount(), now);
 		} catch (IllegalArgumentException ex) {
-			BalanceOutcome rejected = BalanceOutcome.rejected("BALANCE_INSUFFICIENT_FUNDS", ex.getMessage(), request.requestIdentity());
-			idempotencyRepository.save(new BalanceIdempotencyRepositoryPort.IdempotencyRecord(
-				request.requestIdentity(),
-				requestHash,
-				BalanceMutationType.RESERVE,
-				rejected.outcome().name(),
-				rejected.code(),
-				null,
-				now,
-				now));
-			observability.recordReserveOutcome(BalanceOutcomeType.REJECTED);
-			return new ReserveFundsResult(rejected, null);
+			return rejectReservation(request, requestHash, now, ex);
 		}
 		balanceStateRepository.save(nextState.toRecord());
 		FundsReservation reservation = FundsReservation.createActive(
@@ -111,6 +90,64 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 			now);
 		reservationRepository.save(reservation.toRecord());
 
+		return acceptReservation(request, requestHash, now, reservation);
+	}
+
+	private UUID payloadReservationId(String responsePayload) {
+		if (responsePayload == null || responsePayload.isBlank()) {
+			return null;
+		}
+		return UUID.fromString(responsePayload.replace("\"", ""));
+	}
+
+	private RequestHash requestHash(BalanceMutationRequest request) {
+		return new RequestHash(request.requestIdentity().requestId() + "|" + request.amount().value().toPlainString());
+	}
+
+	private Optional<ReserveFundsResult> resolveIdempotentResult(BalanceMutationRequest request, RequestHash requestHash, Instant now) {
+		Optional<IdempotencyDecision> decision = idempotencyService.evaluate(
+			request.requestIdentity(),
+			requestHash,
+			BalanceMutationType.RESERVE,
+			"BALANCE_RESERVATION_DUPLICATE",
+			"Duplicate reservation request",
+			"Request identity already used for a different reservation intent",
+			now);
+		if (decision.isEmpty()) {
+			return Optional.empty();
+		}
+		IdempotencyDecision evaluated = decision.orElseThrow();
+		observability.recordReserveOutcome(evaluated.outcome().outcome());
+		observability.recordDuplicate();
+		return Optional.of(new ReserveFundsResult(evaluated.outcome(), payloadReservationId(evaluated.responsePayload())));
+	}
+
+	private ReserveFundsResult rejectReservation(
+			BalanceMutationRequest request,
+			RequestHash requestHash,
+			Instant now,
+			IllegalArgumentException ex
+	) {
+		BalanceOutcome rejected = BalanceOutcome.rejected("BALANCE_INSUFFICIENT_FUNDS", ex.getMessage(), request.requestIdentity());
+		idempotencyRepository.save(new BalanceIdempotencyRepositoryPort.IdempotencyRecord(
+			request.requestIdentity(),
+			requestHash,
+			BalanceMutationType.RESERVE,
+			rejected.outcome().name(),
+			rejected.code(),
+			null,
+			now,
+			now));
+		observability.recordReserveOutcome(BalanceOutcomeType.REJECTED);
+		return new ReserveFundsResult(rejected, null);
+	}
+
+	private ReserveFundsResult acceptReservation(
+			BalanceMutationRequest request,
+			RequestHash requestHash,
+			Instant now,
+			FundsReservation reservation
+	) {
 		BalanceOutcome accepted = BalanceOutcome.accepted("BALANCE_RESERVED", "Funds reserved successfully", request.requestIdentity());
 		idempotencyRepository.save(new BalanceIdempotencyRepositoryPort.IdempotencyRecord(
 			request.requestIdentity(),
@@ -123,12 +160,5 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 			now));
 		observability.recordReserveOutcome(BalanceOutcomeType.ACCEPTED);
 		return new ReserveFundsResult(accepted, reservation.reservationId());
-	}
-
-	private UUID payloadReservationId(String responsePayload) {
-		if (responsePayload == null || responsePayload.isBlank()) {
-			return null;
-		}
-		return UUID.fromString(responsePayload.replace("\"", ""));
 	}
 }

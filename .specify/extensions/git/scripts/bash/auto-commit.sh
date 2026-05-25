@@ -31,6 +31,28 @@ _find_project_root() {
 REPO_ROOT=$(_find_project_root "$SCRIPT_DIR") || REPO_ROOT="$(pwd)"
 cd "$REPO_ROOT"
 
+_strip_yaml_quotes() {
+    # Best-effort YAML scalar cleanup for simple `key: "value"` / `key: 'value'` lines.
+    # - strips trailing CR (CRLF files)
+    # - trims surrounding whitespace
+    # - strips matching surrounding single/double quotes
+    local s="$1"
+
+    s="${s%$'\r'}"
+    s="${s#"${s%%[![:space:]]*}"}"
+    s="${s%"${s##*[![:space:]]}"}"
+
+    if [ "${#s}" -ge 2 ]; then
+        local first="${s:0:1}"
+        local last="${s: -1}"
+        if { [ "$first" = "\"" ] && [ "$last" = "\"" ]; } || { [ "$first" = "'" ] && [ "$last" = "'" ]; }; then
+            s="${s:1:${#s}-2}"
+        fi
+    fi
+
+    printf '%s' "$s"
+}
+
 # Check if git is available
 if ! command -v git >/dev/null 2>&1; then
     echo "[specify] Warning: Git not found; skipped auto-commit" >&2
@@ -94,7 +116,8 @@ if [ -f "$_config_file" ]; then
                     [ "$_val" = "false" ] && _enabled=false
                 fi
                 if echo "$_line" | grep -Eq '[[:space:]]+message:'; then
-                    _commit_msg=$(echo "$_line" | sed 's/^[^:]*:[[:space:]]*//' | sed 's/^["'\'']//' | sed 's/["'\'']*$//')
+                    _commit_msg_raw=$(echo "$_line" | sed 's/^[^:]*:[[:space:]]*//')
+                    _commit_msg=$(_strip_yaml_quotes "$_commit_msg_raw")
                 fi
             fi
         fi

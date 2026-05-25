@@ -65,71 +65,91 @@ public class PostLedgerTransactionService implements PostLedgerTransactionUseCas
 			var requestHash = requestHasher.hash(command);
 			var existing = idempotencyService.resolveExisting(command.requestIdentity(), requestHash, command.auditTrace());
 			if (existing.isPresent()) {
-				PostingOutcome outcome = existing.get();
-				if (outcome.outcome() == com.bangnk.ledgercore.ledger_core.ledger.domain.valueobject.LedgerEnums.PostingOutcomeType.CONFLICT) {
-					conflictCounter.increment();
-					publish("CONFLICTING_REQUEST", command.auditTrace(), outcome.transactionId(), Map.of("code", outcome.code()));
-				} else {
-					duplicateCounter.increment();
-					publish("DUPLICATE_REQUEST", command.auditTrace(), outcome.transactionId(), Map.of("code", outcome.code()));
-				}
-				return outcome;
+				return handleExistingOutcome(command, existing.get());
 			}
 
 			Instant now = Instant.now(clock);
-			try {
-				var transactionId = LedgerTransactionId.newId();
-				LedgerTransaction ledgerTransaction = LedgerTransaction.post(
-					transactionId,
-					command.businessReference(),
-					command.description(),
-					command.metadata(),
-					command.auditTrace(),
-					command.entries(),
-					now);
-				transactionRepository.save(ledgerTransaction);
-				entryRepository.saveAll(ledgerTransaction.entries());
-				var outcome = PostingOutcome.accepted(
-					"LEDGER_POSTED",
-					"Ledger posting accepted",
-					command.requestIdentity(),
-					transactionId.value().toString(),
-					ledgerTransaction.postedAt(),
-					command.auditTrace());
-				idempotencyService.store(command.requestIdentity(), requestHash, outcome);
-				acceptedCounter.increment();
-				publish("POSTING_ACCEPTED", command.auditTrace(), outcome.transactionId(), Map.of("entries", ledgerTransaction.entries().size()));
-				return outcome;
-			} catch (LedgerDomainException ex) {
-				var transactionId = LedgerTransactionId.newId();
-				var rejected = LedgerTransaction.rejected(
-					transactionId,
-					command.businessReference(),
-					command.description(),
-					command.metadata(),
-					command.auditTrace(),
-					ex.getCode(),
-					ex.getMessage(),
-					now);
-				transactionRepository.save(rejected);
-				var outcome = PostingOutcome.rejected(
-					ex.getCode(),
-					ex.getMessage(),
-					command.requestIdentity(),
-					transactionId.value().toString(),
-					command.auditTrace());
-				idempotencyService.store(command.requestIdentity(), requestHash, outcome);
-				rejectedCounter.increment();
-				publish("POSTING_REJECTED", command.auditTrace(), outcome.transactionId(), Map.of("code", ex.getCode()));
-				return outcome;
-			} catch (RuntimeException ex) {
-				failedCounter.increment();
-				publish("POSTING_FAILED", command.auditTrace(), null, Map.of("code", "LEDGER_POSTING_FAILED"));
-				throw ex;
-			}
+			return persistAndPublish(command, requestHash, now);
 		} finally {
 			sample.stop(postingTimer);
 		}
+	}
+
+	private PostingOutcome handleExistingOutcome(PostLedgerTransactionCommand command, PostingOutcome outcome) {
+		if (outcome.outcome() == com.bangnk.ledgercore.ledger_core.ledger.domain.valueobject.LedgerEnums.PostingOutcomeType.CONFLICT) {
+			conflictCounter.increment();
+			publish("CONFLICTING_REQUEST", command.auditTrace(), outcome.transactionId(), Map.of("code", outcome.code()));
+			return outcome;
+		}
+		duplicateCounter.increment();
+		publish("DUPLICATE_REQUEST", command.auditTrace(), outcome.transactionId(), Map.of("code", outcome.code()));
+		return outcome;
+	}
+
+	private PostingOutcome persistAndPublish(PostLedgerTransactionCommand command, com.bangnk.ledgercore.ledger_core.ledger.domain.valueobject.RequestIdentity.RequestHash requestHash, Instant now) {
+		try {
+			return postAccepted(command, requestHash, now);
+		} catch (LedgerDomainException ex) {
+			return postRejected(command, requestHash, now, ex);
+		} catch (RuntimeException ex) {
+			failedCounter.increment();
+			publish("POSTING_FAILED", command.auditTrace(), null, Map.of("code", "LEDGER_POSTING_FAILED"));
+			throw ex;
+		}
+	}
+
+	private PostingOutcome postAccepted(PostLedgerTransactionCommand command, com.bangnk.ledgercore.ledger_core.ledger.domain.valueobject.RequestIdentity.RequestHash requestHash, Instant now) {
+		var transactionId = LedgerTransactionId.newId();
+		LedgerTransaction ledgerTransaction = LedgerTransaction.post(
+			transactionId,
+			command.businessReference(),
+			command.description(),
+			command.metadata(),
+			command.auditTrace(),
+			command.entries(),
+			now);
+		transactionRepository.save(ledgerTransaction);
+		entryRepository.saveAll(ledgerTransaction.entries());
+		var outcome = PostingOutcome.accepted(
+			"LEDGER_POSTED",
+			"Ledger posting accepted",
+			command.requestIdentity(),
+			transactionId.value().toString(),
+			ledgerTransaction.postedAt(),
+			command.auditTrace());
+		idempotencyService.store(command.requestIdentity(), requestHash, outcome);
+		acceptedCounter.increment();
+		publish("POSTING_ACCEPTED", command.auditTrace(), outcome.transactionId(), Map.of("entries", ledgerTransaction.entries().size()));
+		return outcome;
+	}
+
+	private PostingOutcome postRejected(
+			PostLedgerTransactionCommand command,
+			com.bangnk.ledgercore.ledger_core.ledger.domain.valueobject.RequestIdentity.RequestHash requestHash,
+			Instant now,
+			LedgerDomainException ex
+	) {
+		var transactionId = LedgerTransactionId.newId();
+		var rejected = LedgerTransaction.rejected(
+			transactionId,
+			command.businessReference(),
+			command.description(),
+			command.metadata(),
+			command.auditTrace(),
+			ex.getCode(),
+			ex.getMessage(),
+			now);
+		transactionRepository.save(rejected);
+		var outcome = PostingOutcome.rejected(
+			ex.getCode(),
+			ex.getMessage(),
+			command.requestIdentity(),
+			transactionId.value().toString(),
+			command.auditTrace());
+		idempotencyService.store(command.requestIdentity(), requestHash, outcome);
+		rejectedCounter.increment();
+		publish("POSTING_REJECTED", command.auditTrace(), outcome.transactionId(), Map.of("code", ex.getCode()));
+		return outcome;
 	}
 
 	private void publish(String type, AuditTrace trace, String transactionId, Map<String, Object> safeDetails) {
