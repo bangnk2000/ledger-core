@@ -10,10 +10,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IdempotencyRecordRepositoryPort {
+    boolean createIfAbsent(IdempotencyRecord record);
     IdempotencyRecord save(IdempotencyRecord record);
     Optional<IdempotencyRecord> findById(UUID id);
     Optional<IdempotencyRecord> findByScopeAndKey(IdempotencyScope scope, IdempotencyKey key);
     Optional<IdempotencyRecord> findByClaimOwner(ClaimOwner claimOwner);
+    List<IdempotencyRecord> findReplayWindowExpiredRecords(Instant now);
     List<IdempotencyRecord> findPurgeableRecords(Instant now);
     void delete(IdempotencyRecord record);
 }

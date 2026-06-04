@@ -14,4 +14,15 @@ public record RequestFingerprint(
         if (fingerprintValue.isBlank()) throw new IllegalArgumentException("fingerprintValue must not be blank");
         if (fingerprintVersion.isBlank()) throw new IllegalArgumentException("fingerprintVersion must not be blank");
     }
+
+    public boolean matches(RequestFingerprint other) {
+        return other != null
+            && fingerprintValue.equals(other.fingerprintValue)
+            && fingerprintVersion.equals(other.fingerprintVersion)
+            && Objects.equals(canonicalizationProfile, other.canonicalizationProfile);
+    }
+
+    public boolean conflictsWith(RequestFingerprint other) {
+        return !matches(other);
+    }
 }

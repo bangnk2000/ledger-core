@@ -1,6 +1,8 @@
 package com.bangnk.ledgercore.ledger_core.idempotency.domain.valueobject;
 
+import com.bangnk.ledgercore.ledger_core.idempotency.domain.model.IdempotencyEnums.RetentionStatus;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Objects;
 
 public record RetentionPolicyProfile(
@@ -27,4 +29,26 @@ public record RetentionPolicyProfile(
         Duration.ofHours(24),
         Duration.ofDays(7)
     );
+
+    public Instant replayWindowExpiresAt(Instant firstSeenAt) {
+        return firstSeenAt.plus(replayWindowDuration);
+    }
+
+    public Instant tombstoneExpiresAt(Instant firstSeenAt) {
+        return replayWindowExpiresAt(firstSeenAt).plus(tombstoneDuration);
+    }
+
+    public RetentionStatus retentionStatusAt(
+        Instant now,
+        Instant replayWindowExpiresAt,
+        Instant tombstoneExpiresAt
+    ) {
+        if (now.isAfter(tombstoneExpiresAt)) {
+            return RetentionStatus.PURGE_ELIGIBLE;
+        }
+        if (now.isAfter(replayWindowExpiresAt)) {
+            return RetentionStatus.TOMBSTONED;
+        }
+        return RetentionStatus.REPLAYABLE;
+    }
 }
