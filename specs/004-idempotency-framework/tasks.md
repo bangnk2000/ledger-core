@@ -20,9 +20,9 @@
 
 **Purpose**: Establish isolated execution and test-first discipline before any implementation work starts
 
-- [ ] T000 Create an isolated worktree or equivalent isolated workspace for feature branch `004-idempotency-framework`
-- [ ] T001 Capture red-green-refactor and final verification commands in `specs/004-idempotency-framework/quickstart.md`
-- [ ] T002 Plan task decomposition and ownership for subagent-driven execution in `specs/004-idempotency-framework/tasks.md`
+- [X] T000 Create an isolated worktree or equivalent isolated workspace for feature branch `004-idempotency-framework`
+- [X] T001 Capture red-green-refactor and final verification commands in `specs/004-idempotency-framework/quickstart.md`
+- [X] T002 Plan task decomposition and ownership for subagent-driven execution in `specs/004-idempotency-framework/tasks.md`
 
 ---
 
@@ -30,9 +30,9 @@
 
 **Purpose**: Create the package skeleton and test locations used by all stories
 
-- [ ] T003 Create the `idempotency` module package structure with `package-info.java` files under `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/in/`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/port/in/`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/port/out/`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/config/`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/model/`, and `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/valueobject/`
-- [ ] T004 Create the `idempotency` test package structure with `package-info.java` files under `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/`, `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/application/`, and `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/`
-- [ ] T005 [P] Add focused verification command examples for the new module to `specs/004-idempotency-framework/quickstart.md`
+- [X] T003 Create the `idempotency` module package structure with `package-info.java` files under `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/in/`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/port/in/`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/port/out/`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/config/`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/model/`, and `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/valueobject/`
+- [X] T004 Create the `idempotency` test package structure with `package-info.java` files under `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/`, `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/application/`, and `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/`
+- [X] T005 [P] Add focused verification command examples for the new module to `specs/004-idempotency-framework/quickstart.md`
 
 ---
 
