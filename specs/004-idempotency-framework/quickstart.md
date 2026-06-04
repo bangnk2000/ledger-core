@@ -49,7 +49,7 @@ outside the sandbox with the same `GRADLE_USER_HOME` override.
 
 ## Focused Verification Targets
 
-The implementation should add and pass focused tests similar to these:
+The implementation includes and passes these focused tests:
 
 ```bash
 GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test \
@@ -88,9 +88,24 @@ Protected request flow:
 - Retention policy should default to replay window followed by tombstone
   window; consumers may tune durations but must not bypass the two-stage model.
 
-## Remaining Verification Gaps
+## Verification Results
 
-- No tests were executed during this planning turn.
+- `2026-06-04`: `GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test`
+  passed in `1m 52s`.
+- `2026-06-04`: Focused `US1` verification passed for
+  `IdempotencyRecordTest`, `IdempotencyClaimServiceTest`, and
+  `IdempotencyPersistenceIntegrationTest`.
+- `2026-06-04`: Focused `US2` verification passed for
+  `RequestFingerprintTest`, `IdempotencyConflictServiceTest`,
+  `IdempotencyConcurrencyIntegrationTest`,
+  `IdempotencyFrameworkLedgerCharacterizationTest`, and
+  `IdempotencyFrameworkBalanceCharacterizationTest`.
+- `2026-06-04`: Focused `US3` verification passed for
+  `RetentionPolicyProfileTest`, `IdempotencyCleanupServiceTest`, and
+  `IdempotencyExpirationIntegrationTest`.
+
+## Environment Notes
+
 - The Spec Kit shell helpers in `.specify/scripts/bash/` required temporary
   CRLF normalization to run in this environment; repository scripts were not
-  modified as part of planning.
+  modified as part of implementation.

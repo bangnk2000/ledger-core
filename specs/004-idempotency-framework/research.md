@@ -58,6 +58,11 @@ duplicates observe a stable result. The initial PostgreSQL adapter should use
 unique constraints and conditional state transitions, while the application
 contract remains storage-agnostic.
 
+**Implementation note**: The current adapter realizes this with an additive
+unique constraint plus `INSERT ... ON CONFLICT DO NOTHING`, followed by a
+re-read for competing callers to resolve `DUPLICATE_IN_PROGRESS`, `REPLAY`, or
+`CONFLICT` deterministically.
+
 **Alternatives considered**: In-memory locking was rejected because it fails
 across instances and restarts. Queue-based serialization was rejected because
 it adds infrastructure and latency beyond the current requirement.
@@ -74,6 +79,10 @@ Cleanup can archive or prune only after the tombstone window ends.
 because a late retry could be mistaken for a brand-new request. Permanent
 indefinite retention was rejected because it makes storage growth and cleanup
 unbounded.
+
+**Implementation note**: Cleanup first tombstones records after replay expiry,
+then purges only after tombstone expiry. Late retries during the tombstone
+window return `EXPIRED_KEY` and remain blocked from re-execution.
 
 ## Decision: Preserve existing ledger and balance idempotency implementations during rollout
 

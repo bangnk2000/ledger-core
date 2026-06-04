@@ -67,6 +67,16 @@ Forbidden dependencies:
 - Protocol headers, queue metadata, or framework annotations leaking into the
   idempotency domain model.
 
+Implementation notes:
+
+- The PostgreSQL adapter acquires the first claim with `INSERT ... ON CONFLICT
+  DO NOTHING`, so one concurrent caller wins without relying on JVM-local
+  locks.
+- Replay outcomes are hydrated alongside idempotency records for replay and
+  inspection reads.
+- Cleanup uses replay-window-expired and tombstone-expired queries rather than
+  scanning the full table.
+
 ## Idempotency Scope
 
 Declares where a key must be unique and what kind of operation it protects.

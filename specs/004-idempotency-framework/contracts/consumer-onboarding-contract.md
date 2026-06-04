@@ -107,6 +107,21 @@ Rules:
 - Policy profiles for financial mutations must default to fail-closed behavior
   for expired, in-progress, or indeterminate outcomes.
 
+## Zero-Downtime Sequencing
+
+1. Deploy `V3__create_idempotency_framework.sql` before any consumer switches
+   to the shared module.
+2. Deploy application code that can coexist with the new shared tables while
+   existing `ledger` and `balance` idempotency tables remain authoritative for
+   untouched operation families.
+3. Migrate one operation family at a time behind characterization coverage and
+   replay-parity checks.
+4. Keep legacy tables readable until the migrated flow has passed replay,
+   conflict, concurrency, and retention verification in production-like
+   environments.
+5. Treat legacy table removal as a later explicit migration, not part of the
+   foundational framework rollout.
+
 ## Required Verification Per Consumer
 
 - first execution and replay outcome parity

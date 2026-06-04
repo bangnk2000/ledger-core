@@ -146,6 +146,16 @@ Design artifacts are recorded in:
 - [contracts/consumer-onboarding-contract.md](./contracts/consumer-onboarding-contract.md)
 - [quickstart.md](./quickstart.md)
 
+## Implementation Status
+
+- Atomic first-claim acquisition is implemented in the PostgreSQL adapter with
+  `INSERT ... ON CONFLICT DO NOTHING`.
+- Canonical fingerprint translators are implemented for the current ledger and
+  balance onboarding path and explicitly exclude transport-only metadata from
+  fingerprint material.
+- Replay-window, tombstone, and purge cleanup flows are implemented and covered
+  by focused domain, application, and PostgreSQL integration tests.
+
 ## Post-Design Constitution Check
 
 - **Simplicity and explicitness**: PASS. The design uses one bounded capability module, explicit claim/finalize contracts, and additive persistence instead of hidden framework interception or distributed coordination.

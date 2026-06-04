@@ -62,18 +62,18 @@
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T013 [P] [US1] Add domain tests for first-execution, replay, and terminal-state invariants in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/IdempotencyRecordTest.java`
-- [ ] T014 [P] [US1] Add application tests for successful claim, finalize, and replay resolution in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyClaimServiceTest.java`
-- [ ] T015 [P] [US1] Add PostgreSQL integration test for record creation and replay outcome persistence in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/IdempotencyPersistenceIntegrationTest.java`
+- [X] T013 [P] [US1] Add domain tests for first-execution, replay, and terminal-state invariants in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/IdempotencyRecordTest.java`
+- [X] T014 [P] [US1] Add application tests for successful claim, finalize, and replay resolution in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyClaimServiceTest.java`
+- [X] T015 [P] [US1] Add PostgreSQL integration test for record creation and replay outcome persistence in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/IdempotencyPersistenceIntegrationTest.java`
 
 ### Implementation for User Story 1
 
-- [ ] T016 [US1] Implement first-execution and replay behavior on `IdempotencyRecord` in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/model/IdempotencyRecord.java`
-- [ ] T017 [US1] Implement claim and finalize application services in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyClaimService.java` and `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyFinalizeService.java`
-- [ ] T018 [US1] Implement inspection query service for completed outcomes in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyInspectionService.java`
-- [ ] T019 [US1] Implement JPA entities and repositories for records, replay outcomes, and lifecycle events in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/IdempotencyJpaEntities.java`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/IdempotencyRecordJpaRepository.java`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/ReplayOutcomeJpaRepository.java`, and `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/LifecycleEventJpaRepository.java`
-- [ ] T020 [US1] Implement PostgreSQL-backed persistence adapters for claim/finalize/replay flows in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaIdempotencyRecordRepositoryAdapter.java`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaReplayOutcomeRepositoryAdapter.java`, and `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaLifecycleEventRepositoryAdapter.java`
-- [ ] T021 [US1] Add structured logs and metrics for first execution and replay outcomes in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyObservability.java`
+- [X] T016 [US1] Implement first-execution and replay behavior on `IdempotencyRecord` in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/model/IdempotencyRecord.java`
+- [X] T017 [US1] Implement claim and finalize application services in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyClaimService.java` and `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyFinalizeService.java`
+- [X] T018 [US1] Implement inspection query service for completed outcomes in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyInspectionService.java`
+- [X] T019 [US1] Implement JPA entities and repositories for records, replay outcomes, and lifecycle events in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/IdempotencyJpaEntities.java`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/IdempotencyRecordJpaRepository.java`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/ReplayOutcomeJpaRepository.java`, and `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/LifecycleEventJpaRepository.java`
+- [X] T020 [US1] Implement PostgreSQL-backed persistence adapters for claim/finalize/replay flows in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaIdempotencyRecordRepositoryAdapter.java`, `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaReplayOutcomeRepositoryAdapter.java`, and `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaLifecycleEventRepositoryAdapter.java`
+- [X] T021 [US1] Add structured logs and metrics for first execution and replay outcomes in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyObservability.java`
 
 **Checkpoint**: User Story 1 should replay identical completed requests without creating additional side effects
 
@@ -87,18 +87,18 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T022 [P] [US2] Add domain tests for canonical fingerprint comparison and conflicting reuse in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/RequestFingerprintTest.java`
-- [ ] T023 [P] [US2] Add application tests for duplicate-in-progress and conflict decisions in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyConflictServiceTest.java`
-- [ ] T024 [P] [US2] Add PostgreSQL concurrency integration test for single-winner claim semantics in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/IdempotencyConcurrencyIntegrationTest.java`
-- [ ] T025 [P] [US2] Add characterization tests for canonical request-intent translation in `src/test/java/com/bangnk/ledgercore/ledger_core/ledger/adapter/IdempotencyFrameworkLedgerCharacterizationTest.java` and `src/test/java/com/bangnk/ledgercore/ledger_core/balance/adapter/IdempotencyFrameworkBalanceCharacterizationTest.java`
+- [X] T022 [P] [US2] Add domain tests for canonical fingerprint comparison and conflicting reuse in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/RequestFingerprintTest.java`
+- [X] T023 [P] [US2] Add application tests for duplicate-in-progress and conflict decisions in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyConflictServiceTest.java`
+- [X] T024 [P] [US2] Add PostgreSQL concurrency integration test for single-winner claim semantics in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/IdempotencyConcurrencyIntegrationTest.java`
+- [X] T025 [P] [US2] Add characterization tests for canonical request-intent translation in `src/test/java/com/bangnk/ledgercore/ledger_core/ledger/adapter/IdempotencyFrameworkLedgerCharacterizationTest.java` and `src/test/java/com/bangnk/ledgercore/ledger_core/balance/adapter/IdempotencyFrameworkBalanceCharacterizationTest.java`
 
 ### Implementation for User Story 2
 
-- [ ] T026 [US2] Implement canonical fingerprint normalization rules in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/CanonicalRequestFingerprintFactory.java`
-- [ ] T027 [US2] Implement conflict detection and duplicate-in-progress decision logic in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyConflictService.java`
-- [ ] T028 [US2] Add atomic single-winner claim queries and locking semantics to `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaIdempotencyRecordRepositoryAdapter.java`
-- [ ] T029 [US2] Implement consumer onboarding translators for ledger and balance canonical request intent in `src/main/java/com/bangnk/ledgercore/ledger_core/ledger/application/command/LedgerIdempotencyTranslator.java` and `src/main/java/com/bangnk/ledgercore/ledger_core/balance/application/BalanceIdempotencyTranslator.java`
-- [ ] T030 [US2] Add duplicate-in-progress and conflict observability signals in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyObservability.java`
+- [X] T026 [US2] Implement canonical fingerprint normalization rules in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/CanonicalRequestFingerprintFactory.java`
+- [X] T027 [US2] Implement conflict detection and duplicate-in-progress decision logic in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyConflictService.java`
+- [X] T028 [US2] Add atomic single-winner claim queries and locking semantics to `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaIdempotencyRecordRepositoryAdapter.java`
+- [X] T029 [US2] Implement consumer onboarding translators for ledger and balance canonical request intent in `src/main/java/com/bangnk/ledgercore/ledger_core/ledger/application/command/LedgerIdempotencyTranslator.java` and `src/main/java/com/bangnk/ledgercore/ledger_core/balance/application/BalanceIdempotencyTranslator.java`
+- [X] T030 [US2] Add duplicate-in-progress and conflict observability signals in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyObservability.java`
 
 **Checkpoint**: User Story 2 should reject conflicting reuse and serialize concurrent identical claims to one active execution
 
@@ -112,17 +112,17 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T031 [P] [US3] Add domain tests for retention-state transitions and tombstone rules in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/RetentionPolicyProfileTest.java`
-- [ ] T032 [P] [US3] Add application tests for expiration, tombstoning, and indeterminate cleanup behavior in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyCleanupServiceTest.java`
-- [ ] T033 [P] [US3] Add PostgreSQL integration test for replay-window, tombstone, and purge-eligibility handling in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/IdempotencyExpirationIntegrationTest.java`
+- [X] T031 [P] [US3] Add domain tests for retention-state transitions and tombstone rules in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/RetentionPolicyProfileTest.java`
+- [X] T032 [P] [US3] Add application tests for expiration, tombstoning, and indeterminate cleanup behavior in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyCleanupServiceTest.java`
+- [X] T033 [P] [US3] Add PostgreSQL integration test for replay-window, tombstone, and purge-eligibility handling in `src/test/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/IdempotencyExpirationIntegrationTest.java`
 
 ### Implementation for User Story 3
 
-- [ ] T034 [US3] Implement retention policy and retention-status behavior in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/valueobject/RetentionPolicyProfile.java` and `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/model/IdempotencyRecord.java`
-- [ ] T035 [US3] Implement cleanup and expiration application service in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyCleanupService.java`
-- [ ] T036 [US3] Add replay-window, tombstone, and purge queries to `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaIdempotencyRecordRepositoryAdapter.java`
-- [ ] T037 [US3] Record replay-window and tombstone lifecycle events in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaLifecycleEventRepositoryAdapter.java`
-- [ ] T038 [US3] Add expiration and cleanup observability in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyObservability.java`
+- [X] T034 [US3] Implement retention policy and retention-status behavior in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/valueobject/RetentionPolicyProfile.java` and `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/domain/model/IdempotencyRecord.java`
+- [X] T035 [US3] Implement cleanup and expiration application service in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyCleanupService.java`
+- [X] T036 [US3] Add replay-window, tombstone, and purge queries to `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaIdempotencyRecordRepositoryAdapter.java`
+- [X] T037 [US3] Record replay-window and tombstone lifecycle events in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/adapter/out/persistence/JpaLifecycleEventRepositoryAdapter.java`
+- [X] T038 [US3] Add expiration and cleanup observability in `src/main/java/com/bangnk/ledgercore/ledger_core/idempotency/application/IdempotencyObservability.java`
 
 **Checkpoint**: User Story 3 should retain late-retry safety through replay and tombstone windows without requiring indefinite full-outcome retention
 
@@ -132,11 +132,22 @@
 
 **Purpose**: Complete onboarding documentation, validation, and release readiness across all stories
 
-- [ ] T039 [P] Update module documentation and execution notes in `specs/004-idempotency-framework/plan.md`, `specs/004-idempotency-framework/research.md`, `specs/004-idempotency-framework/data-model.md`, and `specs/004-idempotency-framework/quickstart.md`
-- [ ] T040 Validate zero-downtime migration and coexistence sequencing for `src/main/resources/db/migration/V3__create_idempotency_framework.sql` and `specs/004-idempotency-framework/contracts/consumer-onboarding-contract.md`
-- [ ] T041 [P] Add any remaining adapter-level regression coverage for replay compatibility in `src/test/java/com/bangnk/ledgercore/ledger_core/ledger/adapter/` and `src/test/java/com/bangnk/ledgercore/ledger_core/balance/adapter/`
-- [ ] T042 Run the full verification suite from `specs/004-idempotency-framework/quickstart.md` and record results in `specs/004-idempotency-framework/quickstart.md`
-- [ ] T043 Run code review, resolve or record findings, and capture the finish-branch decision in `specs/004-idempotency-framework/tasks.md`
+- [X] T039 [P] Update module documentation and execution notes in `specs/004-idempotency-framework/plan.md`, `specs/004-idempotency-framework/research.md`, `specs/004-idempotency-framework/data-model.md`, and `specs/004-idempotency-framework/quickstart.md`
+- [X] T040 Validate zero-downtime migration and coexistence sequencing for `src/main/resources/db/migration/V3__create_idempotency_framework.sql` and `specs/004-idempotency-framework/contracts/consumer-onboarding-contract.md`
+- [X] T041 [P] Add any remaining adapter-level regression coverage for replay compatibility in `src/test/java/com/bangnk/ledgercore/ledger_core/ledger/adapter/` and `src/test/java/com/bangnk/ledgercore/ledger_core/balance/adapter/`
+- [X] T042 Run the full verification suite from `specs/004-idempotency-framework/quickstart.md` and record results in `specs/004-idempotency-framework/quickstart.md`
+- [X] T043 Run code review, resolve or record findings, and capture the finish-branch decision in `specs/004-idempotency-framework/tasks.md`
+
+## Review Notes
+
+- Code review findings resolved during implementation:
+  replay outcomes are now hydrated on replay reads, canonical fingerprinting
+  excludes transport-only ledger metadata, and concurrent first-claim handling
+  now uses atomic PostgreSQL insertion instead of exception-driven duplicate
+  races.
+- Finish-branch decision: implementation is verified locally and ready for the
+  next branch action (`commit` or `PR`), but no merge/cleanup action has been
+  taken in this turn.
 
 ---
 
