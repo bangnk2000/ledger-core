@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-specs/003-tech-debt-compliance/plan.md
+specs/004-idempotency-framework/plan.md
 <!-- SPECKIT END -->
 
 # ledger-core
