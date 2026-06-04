@@ -1,5 +1,6 @@
 package com.bangnk.ledgercore.ledger_core.balance.application;
 
+import com.bangnk.ledgercore.ledger_core.audit.application.port.in.AuditCaptureUseCase;
 import com.bangnk.ledgercore.ledger_core.balance.adapter.in.web.ReservationDtos.ConfirmReservationRequest.FinalizationType;
 import com.bangnk.ledgercore.ledger_core.balance.adapter.in.web.ReservationDtos.ReleaseReservationRequest.ReleaseReason;
 import com.bangnk.ledgercore.ledger_core.balance.application.BalanceApplicationErrors.BalanceOutcome;
@@ -22,9 +23,12 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class ReservationLifecycleService implements ConfirmReservationUseCase, ReleaseReservationUseCase {
 
 	private final FundsReservationRepositoryPort reservationRepository;
@@ -35,7 +39,36 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 	private final BalanceIdempotencyService idempotencyService;
 	private final BalanceConsistencyGuard consistencyGuard;
 	private final BalanceObservability observability;
+	private final AuditCaptureUseCase auditCaptureUseCase;
+	private final BalanceAuditTranslator auditTranslator;
 	private final Clock clock;
+
+	@Autowired
+	public ReservationLifecycleService(
+			FundsReservationRepositoryPort reservationRepository,
+			BalanceStateRepositoryPort balanceStateRepository,
+			BalanceIdempotencyRepositoryPort idempotencyRepository,
+			BalanceTransactionPort transactionPort,
+			ProtectedWriteRetryExecutor retryExecutor,
+			BalanceIdempotencyService idempotencyService,
+			BalanceConsistencyGuard consistencyGuard,
+			BalanceObservability observability,
+			AuditCaptureUseCase auditCaptureUseCase,
+			BalanceAuditTranslator auditTranslator,
+			Clock clock
+	) {
+		this.reservationRepository = reservationRepository;
+		this.balanceStateRepository = balanceStateRepository;
+		this.idempotencyRepository = idempotencyRepository;
+		this.transactionPort = transactionPort;
+		this.retryExecutor = retryExecutor;
+		this.idempotencyService = idempotencyService;
+		this.consistencyGuard = consistencyGuard;
+		this.observability = observability;
+		this.auditCaptureUseCase = auditCaptureUseCase;
+		this.auditTranslator = auditTranslator;
+		this.clock = clock;
+	}
 
 	public ReservationLifecycleService(
 			FundsReservationRepositoryPort reservationRepository,
@@ -48,15 +81,19 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 			BalanceObservability observability,
 			Clock clock
 	) {
-		this.reservationRepository = reservationRepository;
-		this.balanceStateRepository = balanceStateRepository;
-		this.idempotencyRepository = idempotencyRepository;
-		this.transactionPort = transactionPort;
-		this.retryExecutor = retryExecutor;
-		this.idempotencyService = idempotencyService;
-		this.consistencyGuard = consistencyGuard;
-		this.observability = observability;
-		this.clock = clock;
+		this(
+			reservationRepository,
+			balanceStateRepository,
+			idempotencyRepository,
+			transactionPort,
+			retryExecutor,
+			idempotencyService,
+			consistencyGuard,
+			observability,
+			command -> new AuditCaptureUseCase.CaptureResult(UUID.randomUUID(), null),
+			new BalanceAuditTranslator(),
+			clock
+		);
 	}
 
 	@Override
@@ -89,6 +126,15 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 			IdempotencyDecision evaluated = decision.orElseThrow();
 			observability.recordLifecycleOutcome(evaluated.outcome().outcome());
 			observability.recordDuplicate();
+			captureLifecycleAuditSafely(
+				reservationId,
+				requestIdentity,
+				actorContext,
+				BalanceMutationType.CONFIRM,
+				now,
+				"CONFIRM_DUPLICATE",
+				ledgerTransactionId
+			);
 			return new ReservationLifecycleResult(evaluated.outcome(), reservationId);
 		}
 
@@ -99,6 +145,15 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 			var duplicate = BalanceOutcome.duplicate("BALANCE_RESERVATION_ALREADY_CONFIRMED", "Reservation already confirmed", requestIdentity);
 			saveIdempotency(requestIdentity, requestHash, BalanceMutationType.CONFIRM, duplicate, reservationId, now);
 			observability.recordLifecycleOutcome(BalanceOutcomeType.DUPLICATE);
+			captureLifecycleAuditSafely(
+				reservationId,
+				requestIdentity,
+				actorContext,
+				BalanceMutationType.CONFIRM,
+				now,
+				"CONFIRM_DUPLICATE",
+				ledgerTransactionId
+			);
 			return new ReservationLifecycleResult(duplicate, reservationId);
 		}
 		BalanceState state = loadStateForUpdate(reservation);
@@ -108,6 +163,15 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 		BalanceOutcome accepted = BalanceOutcome.accepted("BALANCE_RESERVATION_CONFIRMED", "Reservation confirmed", requestIdentity);
 		saveIdempotency(requestIdentity, requestHash, BalanceMutationType.CONFIRM, accepted, reservationId, now);
 		observability.recordLifecycleOutcome(BalanceOutcomeType.ACCEPTED);
+		captureLifecycleAuditSafely(
+			reservationId,
+			requestIdentity,
+			actorContext,
+			BalanceMutationType.CONFIRM,
+			now,
+			"CONFIRM_ACCEPTED",
+			ledgerTransactionId
+		);
 		return new ReservationLifecycleResult(accepted, reservationId);
 	}
 
@@ -126,6 +190,15 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 			IdempotencyDecision evaluated = decision.orElseThrow();
 			observability.recordLifecycleOutcome(evaluated.outcome().outcome());
 			observability.recordDuplicate();
+			captureLifecycleAuditSafely(
+				reservationId,
+				requestIdentity,
+				actorContext,
+				BalanceMutationType.RELEASE,
+				now,
+				"RELEASE_DUPLICATE",
+				null
+			);
 			return new ReservationReleaseResult(evaluated.outcome(), reservationId);
 		}
 
@@ -136,6 +209,15 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 			var duplicate = BalanceOutcome.duplicate("BALANCE_RESERVATION_ALREADY_RELEASED", "Reservation already finalized", requestIdentity);
 			saveIdempotency(requestIdentity, requestHash, BalanceMutationType.RELEASE, duplicate, reservationId, now);
 			observability.recordLifecycleOutcome(BalanceOutcomeType.DUPLICATE);
+			captureLifecycleAuditSafely(
+				reservationId,
+				requestIdentity,
+				actorContext,
+				BalanceMutationType.RELEASE,
+				now,
+				"RELEASE_DUPLICATE",
+				null
+			);
 			return new ReservationReleaseResult(duplicate, reservationId);
 		}
 		BalanceState state = loadStateForUpdate(reservation);
@@ -150,6 +232,15 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 		BalanceOutcome accepted = BalanceOutcome.accepted("BALANCE_RESERVATION_RELEASED", "Reservation released", requestIdentity);
 		saveIdempotency(requestIdentity, requestHash, BalanceMutationType.RELEASE, accepted, reservationId, now);
 		observability.recordLifecycleOutcome(BalanceOutcomeType.ACCEPTED);
+		captureLifecycleAuditSafely(
+			reservationId,
+			requestIdentity,
+			actorContext,
+			BalanceMutationType.RELEASE,
+			now,
+			"RELEASE_ACCEPTED",
+			null
+		);
 		return new ReservationReleaseResult(accepted, reservationId);
 	}
 
@@ -170,5 +261,31 @@ public class ReservationLifecycleService implements ConfirmReservationUseCase, R
 			"\"" + reservationId + "\"",
 			now,
 			now));
+	}
+
+	private void captureLifecycleAuditSafely(
+			UUID reservationId,
+			RequestIdentity requestIdentity,
+			ActorContext actorContext,
+			BalanceMutationType mutationType,
+			Instant occurredAt,
+			String stateTo,
+			String ledgerTransactionId
+	) {
+		try {
+			auditCaptureUseCase.capture(auditTranslator.toLifecycleCaptureCommand(
+				reservationId,
+				requestIdentity,
+				actorContext,
+				mutationType,
+				occurredAt,
+				stateTo,
+				ledgerTransactionId,
+				null,
+				requestIdentity.requestId()
+			));
+		} catch (RuntimeException ex) {
+			log.warn("Shared audit capture failed for balance lifecycle reservationId={}", reservationId, ex);
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package com.bangnk.ledgercore.ledger_core.balance.application;
 
+import com.bangnk.ledgercore.ledger_core.audit.application.port.in.AuditCaptureUseCase;
 import com.bangnk.ledgercore.ledger_core.balance.application.BalanceApplicationErrors.BalanceOutcome;
 import com.bangnk.ledgercore.ledger_core.balance.application.BalanceApplicationErrors.BalanceOutcomeType;
 import com.bangnk.ledgercore.ledger_core.balance.application.BalanceIdempotencyService.IdempotencyDecision;
@@ -17,9 +18,12 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class ReserveFundsService implements ReserveFundsUseCase {
 
 	private final BalanceStateRepositoryPort balanceStateRepository;
@@ -30,7 +34,36 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 	private final BalanceIdempotencyService idempotencyService;
 	private final BalanceConsistencyGuard consistencyGuard;
 	private final BalanceObservability observability;
+	private final AuditCaptureUseCase auditCaptureUseCase;
+	private final BalanceAuditTranslator auditTranslator;
 	private final Clock clock;
+
+	@Autowired
+	public ReserveFundsService(
+			BalanceStateRepositoryPort balanceStateRepository,
+			FundsReservationRepositoryPort reservationRepository,
+			BalanceIdempotencyRepositoryPort idempotencyRepository,
+			BalanceTransactionPort transactionPort,
+			ProtectedWriteRetryExecutor retryExecutor,
+			BalanceIdempotencyService idempotencyService,
+			BalanceConsistencyGuard consistencyGuard,
+			BalanceObservability observability,
+			AuditCaptureUseCase auditCaptureUseCase,
+			BalanceAuditTranslator auditTranslator,
+			Clock clock
+	) {
+		this.balanceStateRepository = balanceStateRepository;
+		this.reservationRepository = reservationRepository;
+		this.idempotencyRepository = idempotencyRepository;
+		this.transactionPort = transactionPort;
+		this.retryExecutor = retryExecutor;
+		this.idempotencyService = idempotencyService;
+		this.consistencyGuard = consistencyGuard;
+		this.observability = observability;
+		this.auditCaptureUseCase = auditCaptureUseCase;
+		this.auditTranslator = auditTranslator;
+		this.clock = clock;
+	}
 
 	public ReserveFundsService(
 			BalanceStateRepositoryPort balanceStateRepository,
@@ -43,15 +76,19 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 			BalanceObservability observability,
 			Clock clock
 	) {
-		this.balanceStateRepository = balanceStateRepository;
-		this.reservationRepository = reservationRepository;
-		this.idempotencyRepository = idempotencyRepository;
-		this.transactionPort = transactionPort;
-		this.retryExecutor = retryExecutor;
-		this.idempotencyService = idempotencyService;
-		this.consistencyGuard = consistencyGuard;
-		this.observability = observability;
-		this.clock = clock;
+		this(
+			balanceStateRepository,
+			reservationRepository,
+			idempotencyRepository,
+			transactionPort,
+			retryExecutor,
+			idempotencyService,
+			consistencyGuard,
+			observability,
+			command -> new AuditCaptureUseCase.CaptureResult(UUID.randomUUID(), null),
+			new BalanceAuditTranslator(),
+			clock
+		);
 	}
 
 	@Override
@@ -119,6 +156,7 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 		IdempotencyDecision evaluated = decision.orElseThrow();
 		observability.recordReserveOutcome(evaluated.outcome().outcome());
 		observability.recordDuplicate();
+		captureAuditSafely(request, "RESERVE_DUPLICATE", null, null, request.requestIdentity().requestId());
 		return Optional.of(new ReserveFundsResult(evaluated.outcome(), payloadReservationId(evaluated.responsePayload())));
 	}
 
@@ -139,6 +177,7 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 			now,
 			now));
 		observability.recordReserveOutcome(BalanceOutcomeType.REJECTED);
+		captureAuditSafely(request, "RESERVE_REJECTED", null, null, request.requestIdentity().requestId());
 		return new ReserveFundsResult(rejected, null);
 	}
 
@@ -159,6 +198,27 @@ public class ReserveFundsService implements ReserveFundsUseCase {
 			now,
 			now));
 		observability.recordReserveOutcome(BalanceOutcomeType.ACCEPTED);
+		captureAuditSafely(request, "RESERVE_ACCEPTED", null, null, request.requestIdentity().requestId());
 		return new ReserveFundsResult(accepted, reservation.reservationId());
+	}
+
+	private void captureAuditSafely(
+			BalanceMutationRequest request,
+			String stateTo,
+			String ledgerTransactionId,
+			String idempotencyRecordId,
+			String idempotencyKey
+	) {
+		try {
+			auditCaptureUseCase.capture(auditTranslator.toCaptureCommand(
+				request,
+				stateTo,
+				ledgerTransactionId,
+				idempotencyRecordId,
+				idempotencyKey
+			));
+		} catch (RuntimeException ex) {
+			log.warn("Shared audit capture failed for balance reserve requestId={}", request.requestIdentity().requestId(), ex);
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package com.bangnk.ledgercore.ledger_core.ledger.application.command;
 
+import com.bangnk.ledgercore.ledger_core.audit.application.port.in.AuditCaptureUseCase;
 import com.bangnk.ledgercore.ledger_core.ledger.application.PostingOutcome;
 import com.bangnk.ledgercore.ledger_core.ledger.application.PostingOutcome.LedgerDomainException;
 import com.bangnk.ledgercore.ledger_core.ledger.application.port.in.LedgerUseCases.PostLedgerTransactionUseCase;
@@ -15,10 +16,14 @@ import io.micrometer.core.instrument.Timer;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 public class PostLedgerTransactionService implements PostLedgerTransactionUseCase {
 
 	private final LedgerTransactionRepository transactionRepository;
@@ -26,6 +31,8 @@ public class PostLedgerTransactionService implements PostLedgerTransactionUseCas
 	private final PostingRequestHasher requestHasher;
 	private final IdempotencyService idempotencyService;
 	private final AuditEventPublisher auditEventPublisher;
+	private final AuditCaptureUseCase auditCaptureUseCase;
+	private final LedgerAuditTranslator auditTranslator;
 	private final Clock clock;
 	private final Counter duplicateCounter;
 	private final Counter conflictCounter;
@@ -33,6 +40,34 @@ public class PostLedgerTransactionService implements PostLedgerTransactionUseCas
 	private final Counter acceptedCounter;
 	private final Counter rejectedCounter;
 	private final Timer postingTimer;
+
+	@Autowired
+	public PostLedgerTransactionService(
+			LedgerTransactionRepository transactionRepository,
+			LedgerEntryRepository entryRepository,
+			PostingRequestHasher requestHasher,
+			IdempotencyService idempotencyService,
+			AuditEventPublisher auditEventPublisher,
+			AuditCaptureUseCase auditCaptureUseCase,
+			LedgerAuditTranslator auditTranslator,
+			LedgerMetrics ledgerMetrics,
+			Clock clock
+	) {
+		this.transactionRepository = transactionRepository;
+		this.entryRepository = entryRepository;
+		this.requestHasher = requestHasher;
+		this.idempotencyService = idempotencyService;
+		this.auditEventPublisher = auditEventPublisher;
+		this.auditCaptureUseCase = auditCaptureUseCase;
+		this.auditTranslator = auditTranslator;
+		this.clock = clock;
+		this.acceptedCounter = ledgerMetrics.postingOutcome("accepted");
+		this.rejectedCounter = ledgerMetrics.postingOutcome("rejected");
+		this.duplicateCounter = ledgerMetrics.postingOutcome("duplicate");
+		this.conflictCounter = ledgerMetrics.postingOutcome("conflict");
+		this.failedCounter = ledgerMetrics.postingOutcome("failed");
+		this.postingTimer = ledgerMetrics.postingTimer();
+	}
 
 	public PostLedgerTransactionService(
 			LedgerTransactionRepository transactionRepository,
@@ -43,18 +78,17 @@ public class PostLedgerTransactionService implements PostLedgerTransactionUseCas
 			LedgerMetrics ledgerMetrics,
 			Clock clock
 	) {
-		this.transactionRepository = transactionRepository;
-		this.entryRepository = entryRepository;
-		this.requestHasher = requestHasher;
-		this.idempotencyService = idempotencyService;
-		this.auditEventPublisher = auditEventPublisher;
-		this.clock = clock;
-		this.acceptedCounter = ledgerMetrics.postingOutcome("accepted");
-		this.rejectedCounter = ledgerMetrics.postingOutcome("rejected");
-		this.duplicateCounter = ledgerMetrics.postingOutcome("duplicate");
-		this.conflictCounter = ledgerMetrics.postingOutcome("conflict");
-		this.failedCounter = ledgerMetrics.postingOutcome("failed");
-		this.postingTimer = ledgerMetrics.postingTimer();
+		this(
+			transactionRepository,
+			entryRepository,
+			requestHasher,
+			idempotencyService,
+			auditEventPublisher,
+			command -> new AuditCaptureUseCase.CaptureResult(UUID.randomUUID(), null),
+			new LedgerAuditTranslator(),
+			ledgerMetrics,
+			clock
+		);
 	}
 
 	@Override
@@ -79,10 +113,12 @@ public class PostLedgerTransactionService implements PostLedgerTransactionUseCas
 		if (outcome.outcome() == com.bangnk.ledgercore.ledger_core.ledger.domain.valueobject.LedgerEnums.PostingOutcomeType.CONFLICT) {
 			conflictCounter.increment();
 			publish("CONFLICTING_REQUEST", command.auditTrace(), outcome.transactionId(), Map.of("code", outcome.code()));
+			captureAuditSafely(command, "CONFLICTING_REQUEST", outcome.transactionId(), null, command.requestIdentity().requestId());
 			return outcome;
 		}
 		duplicateCounter.increment();
 		publish("DUPLICATE_REQUEST", command.auditTrace(), outcome.transactionId(), Map.of("code", outcome.code()));
+		captureAuditSafely(command, "DUPLICATE_REQUEST", outcome.transactionId(), null, command.requestIdentity().requestId());
 		return outcome;
 	}
 
@@ -120,6 +156,7 @@ public class PostLedgerTransactionService implements PostLedgerTransactionUseCas
 		idempotencyService.store(command.requestIdentity(), requestHash, outcome);
 		acceptedCounter.increment();
 		publish("POSTING_ACCEPTED", command.auditTrace(), outcome.transactionId(), Map.of("entries", ledgerTransaction.entries().size()));
+		captureAuditSafely(command, "POSTING_ACCEPTED", outcome.transactionId(), null, command.requestIdentity().requestId());
 		return outcome;
 	}
 
@@ -149,7 +186,28 @@ public class PostLedgerTransactionService implements PostLedgerTransactionUseCas
 		idempotencyService.store(command.requestIdentity(), requestHash, outcome);
 		rejectedCounter.increment();
 		publish("POSTING_REJECTED", command.auditTrace(), outcome.transactionId(), Map.of("code", ex.getCode()));
+		captureAuditSafely(command, "POSTING_REJECTED", outcome.transactionId(), null, command.requestIdentity().requestId());
 		return outcome;
+	}
+
+	private void captureAuditSafely(
+			PostLedgerTransactionCommand command,
+			String stateTo,
+			String ledgerTransactionId,
+			String idempotencyRecordId,
+			String idempotencyKey
+	) {
+		try {
+			auditCaptureUseCase.capture(auditTranslator.toCaptureCommand(
+				command,
+				stateTo,
+				ledgerTransactionId,
+				idempotencyRecordId,
+				idempotencyKey
+			));
+		} catch (RuntimeException ex) {
+			log.warn("Shared audit capture failed for ledger requestId={}", command.requestIdentity().requestId(), ex);
+		}
 	}
 
 	private void publish(String type, AuditTrace trace, String transactionId, Map<String, Object> safeDetails) {

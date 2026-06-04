@@ -34,6 +34,6 @@ public abstract class PostgresIntegrationTestBase {
 
 	@BeforeEach
 	void resetLedgerTables() {
-		jdbcTemplate.execute("TRUNCATE TABLE ledger_entries, ledger_transactions, ledger_idempotency_records");
+		jdbcTemplate.execute("TRUNCATE TABLE audit_publication_attempts, audit_events, ledger_entries, ledger_transactions, ledger_idempotency_records RESTART IDENTITY CASCADE");
 	}
 }

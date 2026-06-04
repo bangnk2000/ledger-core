@@ -46,6 +46,27 @@ GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test
 If the local sandbox blocks Testcontainers networking, rerun the same command
 outside the sandbox with the same `GRADLE_USER_HOME` override.
 
+## Red-Green Commands
+
+Use these commands during task-by-task execution:
+
+```bash
+# Whole-feature regression
+GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test
+
+# Focused red/green loop for the audit module
+GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test \
+  --tests com.bangnk.ledgercore.ledger_core.audit.domain.AuditEventTest \
+  --tests com.bangnk.ledgercore.ledger_core.audit.application.AuditCaptureServiceTest \
+  --tests com.bangnk.ledgercore.ledger_core.audit.adapter.AuditPersistenceIntegrationTest \
+  --tests com.bangnk.ledgercore.ledger_core.audit.adapter.AuditPublicationIntegrationTest
+
+# Focused characterization loop while onboarding ledger and balance flows
+GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test \
+  --tests com.bangnk.ledgercore.ledger_core.ledger.adapter.AuditFrameworkLedgerCharacterizationTest \
+  --tests com.bangnk.ledgercore.ledger_core.balance.adapter.AuditFrameworkBalanceCharacterizationTest
+```
+
 ## Focused Verification Targets
 
 Planned focused suites for this feature:
@@ -90,6 +111,9 @@ Onboarded write flow:
 - Planning artifacts created on `2026-06-04`.
 - Test execution has not been run as part of `/speckit-plan`; verification is
   deferred to implementation and review.
+- Implementation will use the current clean feature-branch workspace
+  `005-audit-trail-framework` as the equivalent isolated workspace for
+  task-list execution.
 
 ## Environment Notes
 

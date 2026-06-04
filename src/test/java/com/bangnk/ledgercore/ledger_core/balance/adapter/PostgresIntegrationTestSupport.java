@@ -15,6 +15,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public abstract class PostgresIntegrationTestSupport {
 
 	private static final List<String> BALANCE_TABLES = List.of(
+		"audit_publication_attempts",
+		"audit_events",
 		"balance_idempotency_records",
 		"balance_reconciliation_records",
 		"balance_rebuild_checkpoints",
