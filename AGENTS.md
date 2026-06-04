@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-specs/004-idempotency-framework/plan.md
+specs/005-audit-trail-framework/plan.md
 <!-- SPECKIT END -->
 
 # ledger-core
